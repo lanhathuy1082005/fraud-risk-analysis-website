@@ -1,7 +1,5 @@
 
-  # Fraud Risk Scoring System real
-
-  This is a code bundle for Fraud Risk Scoring System real. The original project is available at https://www.figma.com/design/xW8c20oTNGnP5kOnY1023a/Fraud-Risk-Scoring-System-real.
+  # Fraud Risk Scoring System
 
   ## Running the code
 
