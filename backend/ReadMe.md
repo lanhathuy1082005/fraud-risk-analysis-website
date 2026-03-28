@@ -8,3 +8,4 @@ Your **backend** code project. It contains the code project(s) for all the backe
    - **Scenario 2**: web backend + blockchain/smart contract require these subfolders:
      - `webapp`: for the backend web application development
      - `dapp`: (distributed app) for smart contract development
+
