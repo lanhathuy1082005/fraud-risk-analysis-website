@@ -3,6 +3,7 @@ import Login from "./pages/Login";
 import MainLayout from "./pages/MainLayout";
 import OperationalDashboard from "./pages/OperationalDashboard";
 import RiskIntelligence from "./pages/RiskIntelligence";
+import TransactionAnalysis from "./pages/TransactionAnalysis";
 
 export const router = createBrowserRouter([
   {
@@ -20,6 +21,10 @@ export const router = createBrowserRouter([
       {
         path: "risk-intelligence",
         Component: RiskIntelligence,
+      },
+      {
+        path: "transaction-analysis",
+        Component: TransactionAnalysis,
       },
     ],
   },
