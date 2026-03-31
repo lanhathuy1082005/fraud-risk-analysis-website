@@ -28,5 +28,5 @@ def input_transaction(data: TransactionInput, session: SessionDep):
         amount=data.amount,
         category=data.category,
     )
-    session.add(transaction)
-    session.commit()
+
+    return transaction

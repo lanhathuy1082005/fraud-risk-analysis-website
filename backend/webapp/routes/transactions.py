@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from core.deps import SessionDep, get_current_user
-from services.fraud_detection import detect_fraud
+from services.transactions import input_transaction
 from sqlmodel import select
-from models import Transaction
+from sqlalchemy.exc import IntegrityError
+from models import Transaction, TransactionInput
 
 router = APIRouter(prefix="/transactions", dependencies=[Depends(get_current_user)])
 
 @router.get("/")
-def get_transactions(  session: SessionDep , page : int = Query(default=1, le=1), limit : int = Query(default=10, le=100)):
+def get_transactions(  session: SessionDep , page : int = Query(default=1, ge=1), limit : int = Query(default=10, ge=1, le=100)):
 
     skip = ( page - 1 ) * limit
     t = session.exec(select(Transaction).order_by(Transaction.time.desc()).offset(skip).limit(limit)).all()
@@ -18,11 +19,19 @@ def get_transactions(  session: SessionDep , page : int = Query(default=1, le=1)
     return t
 
 @router.post("/")
-def create_transaction( session: SessionDep):
-    new_transactions = Transaction()
+def create_transaction( data: TransactionInput, session: SessionDep):
+    try:
+        t = input_transaction(data, session)
+        session.add(t)
+        session.commit()
+        return {"msg":"transaction_created"}
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=409, detail="Conflict, try again")
 
-    session.add
     
+    
+
 @router.patch("/")
-def update_risk(session: SessionDep):
+def update_risk_and_confidence(session: SessionDep):
     pass

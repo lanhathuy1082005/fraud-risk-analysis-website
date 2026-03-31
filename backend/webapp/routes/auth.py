@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import select
 from core.deps import SessionDep, CurrentUser
 from models import User, UserPublic, UserRegister, UserLogin, Token
@@ -13,14 +14,18 @@ def findEmail(email : EmailStr, session : SessionDep):
 def register(user : UserRegister, session : SessionDep):
     existing = findEmail(user.email, session)
     if existing:
-        raise HTTPException(status_code=400, detail="Account already existed")
-    
-    hashed = hash_password(user.password)
-    new_user = User(email=user.email,name=user.name,password_hash=hashed)
+        raise HTTPException(status_code=400, detail="Account already existed") # faster check for better UX
+        
+    try:
+        hashed = hash_password(user.password)
+        new_user = User(email=user.email,name=user.name,password_hash=hashed)
 
-    session.add(new_user)
-    session.commit()
-    return {"message" : "user_created"}
+        session.add(new_user)
+        session.commit()
+        return {"message" : "user_created"}
+    except IntegrityError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="Account already existed") # better security check
 
 @router.post("/token")
 def login(user : UserLogin, session : SessionDep):
