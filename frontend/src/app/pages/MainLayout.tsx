@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
-import { Shield, BarChart3, Activity, LogOut, User } from 'lucide-react';
+import { Shield, BarChart3, Activity, LogOut, User, FlaskConical } from 'lucide-react';
 
 export default function MainLayout() {
   const location = useLocation();
@@ -52,6 +52,18 @@ export default function MainLayout() {
           >
             <BarChart3 className="w-5 h-5" />
             <span className="text-sm font-medium">Risk Intelligence</span>
+          </Link>
+
+          <Link
+            to="/transaction-analysis"
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              isActive('/transaction-analysis')
+                ? 'bg-blue-600 text-white'
+                : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+            }`}
+          >
+            <FlaskConical className="w-5 h-5" />
+            <span className="text-sm font-medium">Transaction Analysis</span>
           </Link>
         </nav>
 
