@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { RiskWeights, defaultWeights } from '../data/mockData';
 import { AlertTriangle, Settings } from 'lucide-react';
 
 interface AdminConfigProps {
