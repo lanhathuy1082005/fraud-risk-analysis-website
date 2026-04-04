@@ -13,11 +13,11 @@ AGE_RANGES = [
     (65, '5'),
 ]
 
-def get_age_category(now: datetime, customer_dob: date):
-    if customer_dob >= now.date():
+def get_age_category(entered_date: datetime, customer_dob: date):
+    if customer_dob >= entered_date.date():
         raise ValueError("Invalid date of birth")
-    age = now.year - customer_dob.year
-    if (now.month, now.day) < (customer_dob.month, customer_dob.day):
+    age = entered_date.year - customer_dob.year
+    if (entered_date.month, entered_date.day) < (customer_dob.month, customer_dob.day):
         age -= 1
 
 
@@ -31,10 +31,10 @@ def get_age_category(now: datetime, customer_dob: date):
 
     return 'unknown'
 
-def get_step(now: datetime):
-    if(now <= settings.SIMULATION_START):
+def get_step(entered_date: datetime):
+    if(entered_date <= settings.SIMULATION_START):
         raise ValueError("Cannot make a transaction before simulation time")
-    delta = now - settings.SIMULATION_START
+    delta = entered_date - settings.SIMULATION_START
 
     step = int(delta.total_seconds()//3600)
     return step
@@ -62,8 +62,8 @@ def get_rolling_std_5(transaction_list: list[Transaction]):
     
     return math.sqrt(variance)
 
-def get_recent_txn_count(now: datetime, customer_id: int, session: SessionDep):
-    ten_hours_ago = now - timedelta(hours=10)
+def get_recent_txn_count(entered_date: datetime, customer_id: int, session: SessionDep):
+    ten_hours_ago = entered_date - timedelta(hours=10)
     recent_txn = session.exec(
     select(Transaction)
     .where(Transaction.customer_id == customer_id)
