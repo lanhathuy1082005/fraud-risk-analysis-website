@@ -1,23 +1,54 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { Shield, Lock, Mail } from 'lucide-react';
+import { useNavigate, Link } from 'react-router';
+import { Shield, Lock, Mail, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
+
+function validateEmail(email: string): string {
+  if (!email) return 'Email is required.';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Enter a valid email address.';
+  return '';
+}
 
 export default function Login() {
-  const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate  = useNavigate();
+  const { login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const [email,    setEmail]    = useState('');
+  const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
+  const [errors,   setErrors]   = useState<{ email?: string; password?: string }>({});
+  const [error,    setError]    = useState('');
+  const [loading,  setLoading]  = useState(false);
+
+  const validate = (): boolean => {
+    const next: { email?: string; password?: string } = {};
+    const emailErr = validateEmail(email);
+    if (emailErr)   next.email    = emailErr;
+    if (!password)  next.password = 'Password is required.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple authentication - in production this would validate credentials
-    if (email && password) {
+    setError('');
+    if (!validate()) return;
+
+    setLoading(true);
+    const result = await login(email, password);
+    setLoading(false);
+
+    if (result.success) {
       navigate('/dashboard');
+    } else {
+      setError(result.error ?? 'Login failed. Please try again.');
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-4">
@@ -33,16 +64,27 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Login Card */}
+        {/* Card */}
         <div className="bg-white rounded-lg shadow-xl p-8">
+
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-900 mb-1">Analyst Login</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">Sign In</h2>
             <p className="text-sm text-gray-600">
-              Access the fraud analysis dashboard
+              Enter your credentials to access the platform
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-5">
+          {/* Global error */}
+          {error && (
+            <div className="flex items-center gap-2 mb-5 px-4 py-3 bg-red-50 border border-red-200 rounded-lg">
+              <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} noValidate className="space-y-5">
+
+            {/* Email */}
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -53,14 +95,24 @@ export default function Login() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
-                  placeholder="analyst@bank.com"
-                  required
+                  onChange={e => {
+                    setEmail(e.target.value);
+                    setError('');
+                    setErrors(prev => { const n = { ...prev }; delete n.email; return n; });
+                  }}
+                  className={`w-full pl-10 pr-4 py-2.5 border rounded-lg outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.email ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
+                  placeholder="you@organisation.com"
+                  autoComplete="email"
                 />
               </div>
+              {errors.email && (
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{errors.email}
+                </p>
+              )}
             </div>
 
+            {/* Password */}
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -69,29 +121,52 @@ export default function Login() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
                   id="password"
-                  type="password"
+                  type={showPass ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                  onChange={e => {
+                    setPassword(e.target.value);
+                    setError('');
+                    setErrors(prev => { const n = { ...prev }; delete n.password; return n; });
+                  }}
+                  className={`w-full pl-10 pr-10 py-2.5 border rounded-lg outline-none transition-colors focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.password ? 'border-red-400 bg-red-50' : 'border-gray-300'}`}
                   placeholder="Enter your password"
-                  required
+                  autoComplete="current-password"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPass(s => !s)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                  tabIndex={-1}
+                >
+                  {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
+              {errors.password && (
+                <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+                  <AlertCircle className="w-3 h-3" />{errors.password}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 outline-none disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              Sign In
+              {loading ? 'Signing in…' : 'Sign In'}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              Enterprise Banking Security Operations
-              <br />
-              Authorized personnel only
+          {/* Register link */}
+          <div className="mt-6 pt-6 border-t border-gray-200 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                Create Account
+              </Link>
             </p>
           </div>
         </div>
