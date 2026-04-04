@@ -158,3 +158,119 @@ export async function authFetch<T>(
 
   return res.json() as Promise<T>;
 }
+
+// ─── transaction endpoints ────────────────────────────────────────────────────
+
+/**
+ * Shared types that mirror the backend TransactionPublic schema.
+ */
+export interface TransactionPublic {
+  uuid:          string;
+  amount:        number;
+  time:          string;
+  category:      string;
+  merchant_name: string;
+  customer_name: string;
+  risk:          number | null;
+  confidence:    number | null;
+}
+
+export interface TransactionCreatePayload {
+  amount:          number;
+  time:            string;        // ISO 8601
+  category:        string;        // e.g. "es_tech"
+  merchant_name:   string;
+  customer_name:   string;
+  customer_dob:    string;        // "YYYY-MM-DD"
+  customer_gender: 'M' | 'F' | 'U';
+}
+
+export interface ReviewPayload {
+  status: 'APPROVED' | 'FLAGGED' | 'PENDING';
+}
+
+export interface AnalyticsData {
+  risk_over_time: {
+    hour:     string;
+    avg_risk: number | null;
+    count:    number;
+  }[];
+  confidence_over_time: {
+    hour:            string;
+    avg_confidence:  number | null;
+    count:           number;
+  }[];
+  scatter: {
+    uuid:       string;
+    risk:       number | null;
+    confidence: number | null;
+    amount:     number;
+    category:   string;
+  }[];
+  summary: {
+    total:                    number;
+    avg_risk:                 number | null;
+    avg_confidence:           number | null;
+    high_risk_high_confidence: number;
+    low_confidence:           number;
+  };
+}
+
+/**
+ * POST /transactions
+ * Create a new transaction record.
+ */
+export async function apiCreateTransaction(
+  payload: TransactionCreatePayload,
+): Promise<TransactionPublic> {
+  return authFetch<TransactionPublic>('/transactions', {
+    method: 'POST',
+    body:   JSON.stringify(payload),
+  });
+}
+
+/**
+ * GET /transactions
+ * Fetch a list of transactions with optional query filters.
+ */
+export async function apiGetTransactions(params?: {
+  customer_id?: number;
+  category?:    string;
+  from_time?:   string;
+  to_time?:     string;
+  limit?:       number;
+  offset?:      number;
+}): Promise<TransactionPublic[]> {
+  const qs = new URLSearchParams();
+  if (params?.customer_id !== undefined) qs.set('customer_id', String(params.customer_id));
+  if (params?.category)    qs.set('category',    params.category);
+  if (params?.from_time)   qs.set('from_time',   params.from_time);
+  if (params?.to_time)     qs.set('to_time',      params.to_time);
+  if (params?.limit)       qs.set('limit',        String(params.limit));
+  if (params?.offset)      qs.set('offset',       String(params.offset));
+
+  const query = qs.toString() ? `?${qs.toString()}` : '';
+  return authFetch<TransactionPublic[]>(`/transactions${query}`);
+}
+
+/**
+ * PATCH /transactions/{uuid}/review
+ * Submit an analyst review decision for a transaction.
+ */
+export async function apiReviewTransaction(
+  uuid:    string,
+  payload: ReviewPayload,
+): Promise<{ transaction_uuid: string; status: string; reviewed_by: number; reviewed_at: string }> {
+  return authFetch(`/transactions/${uuid}/review`, {
+    method: 'PATCH',
+    body:   JSON.stringify(payload),
+  });
+}
+
+/**
+ * GET /transactions/analytics
+ * Fetch aggregated chart data for the Risk Intelligence dashboard.
+ */
+export async function apiGetAnalytics(hours = 24): Promise<AnalyticsData> {
+  return authFetch<AnalyticsData>(`/transactions/analytics?hours=${hours}`);
+}
