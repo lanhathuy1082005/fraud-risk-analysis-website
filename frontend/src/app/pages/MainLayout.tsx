@@ -1,11 +1,14 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { Shield, BarChart3, Activity, LogOut, User, FlaskConical } from 'lucide-react';
+import { useAuth } from '../auth/AuthContext';
 
 export default function MainLayout() {
-  const location = useLocation();
-  const navigate = useNavigate();
+  const location          = useLocation();
+  const navigate          = useNavigate();
+  const { user, logout }  = useAuth();
 
   const handleLogout = () => {
+    logout();          // clears JWT from sessionStorage + resets auth state
     navigate('/');
   };
 
@@ -15,7 +18,8 @@ export default function MainLayout() {
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <aside className="w-64 bg-slate-900 text-white flex flex-col">
-        {/* Logo/Header */}
+
+        {/* Logo / Header */}
         <div className="p-6 border-b border-slate-800">
           <div className="flex items-center gap-3">
             <div className="bg-blue-600 p-2 rounded-lg">
@@ -67,17 +71,22 @@ export default function MainLayout() {
           </Link>
         </nav>
 
-        {/* User Section */}
+        {/* User Section — now populated from JWT payload */}
         <div className="p-4 border-t border-slate-800">
           <div className="flex items-center gap-3 px-4 py-3 mb-2">
-            <div className="bg-slate-700 p-2 rounded-full">
+            <div className="bg-slate-700 p-2 rounded-full flex-shrink-0">
               <User className="w-4 h-4" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium">Fraud Analyst</p>
-              <p className="text-xs text-slate-400">analyst@bank.com</p>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                {user?.name ?? 'Unknown User'}
+              </p>
+              <p className="text-xs text-slate-400 truncate">
+                {user?.email ?? ''}
+              </p>
             </div>
           </div>
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-white transition-colors"
