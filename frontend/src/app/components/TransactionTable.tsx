@@ -1,6 +1,5 @@
 import { Transaction } from '../data/mockData';
 import { CompositeRiskBar } from './CompositeRiskBar';
-import { MapPin } from 'lucide-react';
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -30,9 +29,6 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 Amount
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Location / IP
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                 Risk Score
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -58,13 +54,6 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">${transaction.amount.toLocaleString()}</span>
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <MapPin className="w-3 h-3" />
-                    <span>{transaction.location}</span>
-                  </div>
-                  <div className="text-xs text-gray-500">{transaction.ipAddress}</div>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`text-sm font-semibold ${
