@@ -1,7 +1,7 @@
 import pandas as pd
 import numpy as np
 from fastapi import FastAPI
-from models import TransactionInput, TransactionSummary
+from models import TransactionInput, TransactionSummary, Customer, CustomerCategory, CustomerDevice
 from utils.statistics import *
 
 
@@ -45,12 +45,30 @@ def get_conf_score(app: FastAPI, txn_data: TransactionInput, txn_summary: Transa
 
     return round(float(conf_score[0][1]), 2)
 
-Z_CAP = 100.0
+Z_CAP = 5.0
 
-def get_risk_score(z_scores: dict[str,float]):
+def get_risk_score(
+                z_scores: dict[str,float], 
+                txn_data: TransactionInput, 
+                customer: Customer, 
+                c_d_data: CustomerDevice, 
+                c_c_data: CustomerCategory):
     w_amount = 0.4
     w_device = 0.3
     w_time = 0.3
+    penalties = 0.0
+
+    if txn_data.customer_dob != customer.dob:
+        penalties += 0.5
+
+    if txn_data.customer_gender != customer.gender:
+        penalties += 0.4
+    
+    if c_d_data and txn_data.device_name != c_d_data.device.name:
+        penalties += 0.15
+
+    if c_c_data and txn_data.category != c_c_data.category:
+        penalties += 0.05
 
     risk_score = (
     w_amount * get_z_cap(z_scores["amount"], Z_CAP) #amount_anomaly
@@ -59,4 +77,4 @@ def get_risk_score(z_scores: dict[str,float]):
     )
 
 
-    return round(risk_score, 2)
+    return round(min( risk_score + penalties , 1.0), 2)

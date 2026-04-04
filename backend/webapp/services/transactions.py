@@ -1,6 +1,6 @@
 from core.deps import SessionDep
 from sqlmodel import select
-from models import Customer, CustomerInput, Merchant, MerchantInput, Device, DeviceInput
+from models import Customer, CustomerCategory, CustomerDevice, CustomerInput, Merchant, MerchantInput, Device, DeviceInput, TransactionInput
 from utils.statistics import update_welford, get_z_score, get_time_delta
 
 def upsert_merchant(merchant_data: MerchantInput, session: SessionDep):
@@ -98,3 +98,53 @@ def upsert_customer(device: Device, customer_data: CustomerInput, session: Sessi
     session.refresh(customer)
 
     return customer, z_scores
+
+# for risk score calcution
+def upsert_customer_device(device: Device, customer: Customer, session: SessionDep):
+    # upsert this interaction
+    record = session.exec(
+        select(CustomerDevice)
+        .where(CustomerDevice.customer_id == customer.id)
+        .where(CustomerDevice.device_id == device.id)
+    ).first()
+
+    if not record:
+        record = CustomerDevice(customer_id=customer.id, device_id=device.id, frequency=1)
+    else:
+        record.frequency += 1
+
+    session.add(record)
+    session.flush()
+
+    # get top device
+    top = session.exec(
+        select(CustomerDevice)
+        .where(CustomerDevice.customer_id == customer.id)
+        .order_by(CustomerDevice.frequency.desc())
+    ).first()
+
+    return top
+def upsert_customer_category(txn_data: TransactionInput, customer:Customer, session: SessionDep):
+    record = session.exec(
+        select(CustomerCategory)
+        .where(CustomerCategory.customer_id == customer.id)
+        .where(CustomerCategory.category == txn_data.category)
+    ).first()
+    
+    if not record:
+        record = CustomerCategory(customer_id=customer.id,category=txn_data.category, frequency=1)
+    else:
+        record.frequency +=1
+
+    session.add(record)
+    session.flush()
+
+
+    top = session.exec(
+        select(CustomerCategory)
+        .where(CustomerCategory.customer_id == customer.id)
+        .where(CustomerCategory.category == txn_data.category)
+        .order_by(CustomerCategory.frequency.desc())
+        ).first()
+
+    return top

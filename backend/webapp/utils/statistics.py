@@ -32,6 +32,8 @@ def get_age_category(now: datetime, customer_dob: date):
     return 'unknown'
 
 def get_step(now: datetime):
+    if(now <= settings.SIMULATION_START):
+        raise ValueError("Cannot make a transaction before simulation time")
     delta = now - settings.SIMULATION_START
 
     step = int(delta.total_seconds()//3600)

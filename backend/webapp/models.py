@@ -1,6 +1,8 @@
 from sqlmodel import Field, SQLModel, Relationship
+from sqlalchemy import Column, DateTime
 from uuid import UUID, uuid4
 from pydantic import EmailStr
+from typing import Any
 from datetime import date, datetime, timezone
 from collections.abc import Sequence
 from enum import Enum
@@ -28,9 +30,8 @@ class Category(str, Enum):
     wellness_and_beauty = "es_wellnessandbeauty"
 
 class Status(str, Enum):
-    FLAGGED = "FLAGGED"
-    APPROVED = "APPROVED"
-    PENDING = "PENDING"
+    blocked = "blocked"
+    approved = "approved"
 
 """return functions"""
 
@@ -74,7 +75,9 @@ class Customer(SQLModel,table=True):
     txn_count: int
 
     avg_time_between_txn: float
-    last_txn_time: datetime 
+    last_txn_time: datetime = Field(
+        sa_column=Column(DateTime(timezone=True))
+    )
     time_M2: float
 
     avg_device_freq: float
@@ -116,17 +119,16 @@ class Review(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     status: Status 
     user_id: int = Field(foreign_key="users.id", index=True)
-    reviewed_at: datetime = Field(default_factory=get_current_time)
+    reviewed_at: datetime = Field(default_factory=get_current_time, sa_column=Column(DateTime(timezone=True)))
 
 class ReviewInput(SQLModel):
     status: Status 
-    transaction_id: int 
     user_id: int 
 
 """transactions"""
 class TransactionBase(SQLModel):
     amount: float
-    time: datetime | None
+    time: datetime | None = Field(default=None,sa_column=Column(DateTime(timezone=True)))
     category: Category  
 
 class Transaction(TransactionBase, table=True):
@@ -135,7 +137,7 @@ class Transaction(TransactionBase, table=True):
     merchant_id: int = Field(foreign_key="merchants.id", index=True)
     customer_id: int = Field(foreign_key="customers.id", index=True)
     device_id: int = Field(foreign_key="devices.id", index=True)
-    review_id: int = Field(foreign_key="reviews.id", index=True)
+    review_id: int | None = Field(default=None,foreign_key="reviews.id", index=True)
     uuid: UUID = Field(default_factory=uuid4,index=True, unique=True)
     risk_score: float
     confidence_score: float
@@ -159,7 +161,7 @@ class TransactionPublic(TransactionBase):
     merchant_name: str  
     customer_id: int
     device_type: str
-    transaction_status: Status  
+    transaction_status: Status | None = None 
     risk_score: float 
     confidence_score: float
 
@@ -169,8 +171,26 @@ class TransactionSummary(SQLModel):
     txn_count: int
     recent_txn_count: int
     merchant_freq: int
+"""junction tables"""
+class CustomerDevice(SQLModel, table=True):
+    __tablename__ = "customer_devices"
+    customer_id: int = Field(foreign_key="customers.id", primary_key=True)
+    device_id: int = Field(foreign_key="devices.id", primary_key=True)
+    frequency: int 
+
+    device: Device | None = Relationship()
+
+class CustomerCategory(SQLModel, table=True):
+    __tablename__ = "customer_categories"
+    customer_id: int = Field(foreign_key="customers.id", index=True)
+    category: Category = Field(primary_key=True)
+    frequency: int 
 
 """others"""
+
+class GraphPoint(SQLModel):
+    x: Any
+    y: Any
 
 class Token(SQLModel):
     access_token: str

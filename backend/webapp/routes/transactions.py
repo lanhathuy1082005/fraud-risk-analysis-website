@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from core.deps import SessionDep, get_current_user
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput
 from services.ml_pipeline import get_conf_score, get_risk_score
-from services.transactions import upsert_customer,upsert_device,upsert_merchant
+from services.transactions import upsert_customer,upsert_device,upsert_merchant, upsert_customer_category, upsert_customer_device
 from utils.statistics import get_last_5_txn, get_recent_txn_count
 
 router = APIRouter(prefix="/transactions", dependencies=[Depends(get_current_user)])
@@ -26,10 +26,11 @@ def get_transactions(  session: SessionDep , page : int = Query(default=1, ge=1)
     
     result = [
     TransactionPublic(
-        customer_id=t.customer.id,
-        merchant_name=t.merchant.name,
-        device_type=t.device.name,
-        transaction_status=t.review.status
+        amount=t.amount, time=t.time, category=t.category,
+        id=t.id, uuid=t.uuid, customer_id=t.customer.id, 
+        merchant_name=t.merchant.name, device_type=t.device.name,
+        transaction_status=t.review.status if t.review else None,
+        risk_score=t.risk_score, confidence_score=t.confidence_score
     )
     for t in transactions]
 
@@ -58,6 +59,11 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                             amount=txn_data.amount,
                                             time=txn_data.time), session=session)
         
+        #upsert junction tables (retrieving customer primary device and categories for risk calculation)
+        c_d_data = upsert_customer_device(device=device,customer=customer,session=session)
+
+        c_c_data = upsert_customer_category(txn_data=txn_data, customer=customer, session=session)
+        
         if not customer:
             raise ValueError("Cannot complete transaction due to transaction being earlier than the last")
 
@@ -75,7 +81,11 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
 
         #infering to the models
         confidence_score = get_conf_score(app= request.app, txn_data= txn_data, txn_summary=txn_summary)
-        risk_score = get_risk_score(z_scores=z_scores)
+        risk_score = get_risk_score(z_scores=z_scores,
+                                    txn_data=txn_data,
+                                    customer=customer,
+                                    c_d_data=c_d_data,
+                                    c_c_data=c_c_data)
         
         new_transaction = Transaction(amount=txn_data.amount,
                                     time=txn_data.time,
@@ -88,12 +98,15 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
         session.add(new_transaction)
         session.commit()
         return {"msg":"transaction_created"}
-    except IntegrityError:
+    except IntegrityError as e:
         session.rollback()
         raise HTTPException(status_code=409, detail="Conflict, try again")
     except ValueError as e:
         session.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except KeyError:
+        session.rollback()
+        raise HTTPException(status_code=400, detail="Invalid model")
 
     
     
