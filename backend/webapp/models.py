@@ -2,6 +2,7 @@ from sqlmodel import Field, SQLModel, Relationship
 from uuid import UUID, uuid4
 from pydantic import EmailStr
 from datetime import date, datetime, timezone
+from collections.abc import Sequence
 from enum import Enum
 
 
@@ -30,8 +31,8 @@ class Status(str, Enum):
     FLAGGED = "FLAGGED"
     APPROVED = "APPROVED"
     PENDING = "PENDING"
-    
 
+"""return functions"""
 
 def get_current_time():
     return datetime.now(timezone.utc)
@@ -60,58 +61,115 @@ class UserLogin(SQLModel):
     password: str
 
 
-"""transactions"""
+"""customers"""
 class Customer(SQLModel,table=True):
     __tablename__ = "customers"
 
-    id: int | None = Field(default=None, primary_key=True)
-    name: str = Field(unique=True, index=True)
+    id: int = Field(unique=True,primary_key=True)
     dob: date
     gender: Gender
 
+    avg_amount: float 
+    amount_M2: float
+    txn_count: int
+
+    avg_time_between_txn: float
+    last_txn_time: datetime 
+    time_M2: float
+
+    avg_device_freq: float
+    device_M2: float
+    device_count: int
+
+
+
+class CustomerInput(SQLModel):
+    id: int
+    dob: date
+    gender: Gender
+    amount: float
+    time: datetime
+
+"""merchants"""
 class Merchant(SQLModel, table=True):
     __tablename__ = "merchants"
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(unique=True, index=True)
+    frequency: int 
 
+class MerchantInput(SQLModel):
+    name: str 
+
+"""devices"""
+class Device(SQLModel,table=True):
+    __tablename__= "devices"
+    id: int | None = Field(default=None, primary_key=True)
+    name: str = Field(unique=True, index=True)
+    frequency: int
+
+class DeviceInput(SQLModel):
+    name: str 
+
+"""review"""
+class Review(SQLModel, table=True):
+    __tablename__ = "reviews"
+    id: int | None = Field(default=None, primary_key=True)
+    status: Status 
+    transaction_id: int = Field(foreign_key="transactions.id", index=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    reviewed_at: datetime = Field(default_factory=get_current_time())
+
+class ReviewInput(SQLModel):
+    status: Status 
+    transaction_id: int 
+    user_id: int 
+
+"""transactions"""
 class TransactionBase(SQLModel):
     amount: float
-    time: datetime = Field(default_factory=get_current_time)
-    category: Category
+    time: datetime | None
+    category: Category  
 
 class Transaction(TransactionBase, table=True):
     __tablename__ = "transactions"
     id: int | None = Field(default=None, primary_key=True)
-    merchant_id: int = Field(foreign_key="merchants.id")
-    customer_id: int = Field(foreign_key="customers.id")
+    merchant_id: int = Field(foreign_key="merchants.id", index=True)
+    customer_id: int = Field(foreign_key="customers.id", index=True)
+    device_id: int = Field(foreign_key="devices.id", index=True)
+    review_id: int = Field(foreign_key="reviews.id", index=True)
     uuid: UUID = Field(default_factory=uuid4,index=True, unique=True)
-    risk: float | None = None
-    confidence: float | None = None
-    merchant: Merchant | None= Relationship()
+    risk_score: float
+    fraud_probability: float
+
+    merchant: Merchant | None = Relationship()
     customer: Customer | None = Relationship()
+    device: Device | None = Relationship()
+    review: Review | None = Relationship()
 
 class TransactionInput(TransactionBase):
     merchant_name: str
-    customer_name: str
+    customer_id: int
+    device_name: str
     customer_dob: date
     customer_gender: Gender
+    model_key : str
 
 class TransactionPublic(TransactionBase):
+    id: int
     uuid: UUID
     merchant_name: str  
-    customer_name: str  
-    risk: float | None = None
-    confidence: float | None = None
+    customer_id: int
+    device_type: str
+    transaction_status: Status  
+    risk_score: float 
+    fraud_probability: float
 
-
-
-class TransactionReview(SQLModel, table=True):
-    __tablename__ = "transaction_reviews"
-    id: int | None = Field(default=None, primary_key=True)
-    transaction_id: int = Field(foreign_key="transactions.id")
-    status: Status 
-    reviewed_by_user: int | None = None 
-    reviewed_at: datetime | None = None
+class TransactionSummary(SQLModel):
+    last_5_txn: Sequence[Transaction]
+    avg_amount: float
+    txn_count: int
+    recent_txn_count: int
+    merchant_freq: int
 
 """others"""
 

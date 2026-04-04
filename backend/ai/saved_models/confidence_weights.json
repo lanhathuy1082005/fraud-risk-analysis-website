@@ -2,12 +2,11 @@
   "w_amount": 0.4,
   "w_device": 0.3,
   "w_time": 0.3,
-  "amount_anomaly_threshold": "mean \u00b1 1 std of TransactionAmt (computed at fit time)",
+  "amount_anomaly_threshold": "mean \u00b1 1 std",
   "time_anomaly_hours": {
     "lower": 5,
     "upper": 23
   },
-  "note": "amount_anomaly uses df_ieee_clean['TransactionAmt'].mean() and .std() at the time of feature creation.  Save those values below.",
   "ieee_TransactionAmt_mean": 135.02717637247264,
   "ieee_TransactionAmt_std": 239.16252201373405
 }
