@@ -64,18 +64,6 @@ export function TransactionDetailModal({
               </p>
             </div>
             <div>
-              <label className="text-sm text-gray-600">Location</label>
-              <p className="text-base font-medium text-gray-900 mt-1">{transaction.location}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600">IP Address</label>
-              <p className="text-base font-medium text-gray-900 mt-1">{transaction.ipAddress}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600">Device</label>
-              <p className="text-base font-medium text-gray-900 mt-1">{transaction.deviceInfo}</p>
-            </div>
-            <div>
               <label className="text-sm text-gray-600">Timestamp</label>
               <p className="text-base font-medium text-gray-900 mt-1">
                 {transaction.timestamp.toLocaleString()}
