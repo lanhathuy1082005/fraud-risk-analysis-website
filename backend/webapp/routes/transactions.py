@@ -5,7 +5,7 @@ from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
 from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput
-from services.ml_pipeline import get_fraud_prob, get_risk_score
+from services.ml_pipeline import get_conf_score, get_risk_score
 from services.transactions import upsert_customer,upsert_device,upsert_merchant
 from utils.statistics import get_last_5_txn, get_recent_txn_count
 
@@ -74,11 +74,8 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                         merchant_freq=merchant.frequency)
 
         #infering to the models
-        fraud_probability = get_fraud_prob(app= request.app, txn_data= txn_data, txn_summary=txn_summary)
+        confidence_score = get_conf_score(app= request.app, txn_data= txn_data, txn_summary=txn_summary)
         risk_score = get_risk_score(z_scores=z_scores)
-
-        if fraud_probability < 0 or fraud_probability > 1:
-            raise ValueError("confidence score should be within the range of 0 and 1")
         
         new_transaction = Transaction(amount=txn_data.amount,
                                     time=txn_data.time,
@@ -87,7 +84,7 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                     customer_id=customer.id,
                                     device_id=device.id,
                                     risk_score=risk_score,
-                                    fraud_probability=fraud_probability)
+                                    confidence_score=confidence_score)
         session.add(new_transaction)
         session.commit()
         return {"msg":"transaction_created"}

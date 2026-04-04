@@ -36,14 +36,14 @@ def generate_data(app : FastAPI,  txn_data: TransactionInput, txn_summary: Trans
     return df_encoded
 
 
-def get_fraud_prob(app: FastAPI, txn_data: TransactionInput, txn_summary: TransactionSummary):
+def get_conf_score(app: FastAPI, txn_data: TransactionInput, txn_summary: TransactionSummary):
 
     df = generate_data(app=app,txn_data=txn_data,txn_summary=txn_summary)
     chosen_model = app.state.models[txn_data.model_key]
 
-    fraud_prob = chosen_model.predict_proba(df)
+    conf_score = chosen_model.predict_proba(df)
 
-    return round(float(fraud_prob[0][1]), 2)
+    return round(float(conf_score[0][1]), 2)
 
 Z_CAP = 100.0
 

@@ -74,7 +74,7 @@ export async function apiRegister(payload: {
   email:    string;
   password: string;
 }): Promise<void> {
-  const res = await fetch(`${BASE_URL}/register`, {
+  const res = await fetch(`${BASE_URL}/auth/register`, {
     method:  'POST',
     headers: buildHeaders(),
     body:    JSON.stringify(payload),
@@ -94,15 +94,12 @@ export async function apiRegister(payload: {
  * Returns Token: { access_token: str, token_type: str }
  */
 export async function apiLogin(email: string, password: string): Promise<string> {
-  // FastAPI OAuth2PasswordRequestForm requires application/x-www-form-urlencoded
-  const body = new URLSearchParams();
-  body.append('username', email);   // FastAPI OAuth2 uses "username" field
-  body.append('password', password);
 
-  const res = await fetch(`${BASE_URL}/login`, {
+
+  const res = await fetch(`${BASE_URL}/auth/token`, {
     method:  'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body:    body.toString(),
+    headers: buildHeaders(),   // no auth header for login
+    body:    JSON.stringify({ email: email, password: password }),  // FastAPI expects "username" field
   });
 
   if (!res.ok) {
@@ -114,7 +111,7 @@ export async function apiLogin(email: string, password: string): Promise<string>
 }
 
 /**
- * GET /me  (or whichever endpoint returns the current user's profile)
+ * GET /me  
  *
  * Used on app mount to restore the session from a stored JWT.
  * Returns UserPublic: { email, name, uuid }
@@ -122,7 +119,7 @@ export async function apiLogin(email: string, password: string): Promise<string>
  * Throws if the token is missing or rejected by the backend.
  */
 export async function apiGetMe(): Promise<{ email: string; name: string; uuid: string }> {
-  const res = await fetch(`${BASE_URL}/me`, {
+  const res = await fetch(`${BASE_URL}/auth/me`, {
     method:  'GET',
     headers: buildHeaders(true),   // attach Authorization header
   });

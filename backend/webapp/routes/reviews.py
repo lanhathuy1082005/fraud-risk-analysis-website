@@ -1,10 +1,10 @@
-from fastapi import APIRouter
-from core.deps import SessionDep,get_current_user,CurrentUser
+from fastapi import APIRouter, Depends
+from core.deps import SessionDep, get_current_user,CurrentUser
 from models import Review, ReviewInput
 from sqlmodel import select
 
 
-router = APIRouter(prefix="review",dependencies=get_current_user)
+router = APIRouter(prefix="/review", dependencies=[Depends(get_current_user)])
 
 
 @router.post("/")

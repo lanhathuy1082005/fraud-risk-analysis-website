@@ -115,9 +115,8 @@ class Review(SQLModel, table=True):
     __tablename__ = "reviews"
     id: int | None = Field(default=None, primary_key=True)
     status: Status 
-    transaction_id: int = Field(foreign_key="transactions.id", index=True)
     user_id: int = Field(foreign_key="users.id", index=True)
-    reviewed_at: datetime = Field(default_factory=get_current_time())
+    reviewed_at: datetime = Field(default_factory=get_current_time)
 
 class ReviewInput(SQLModel):
     status: Status 
@@ -139,7 +138,7 @@ class Transaction(TransactionBase, table=True):
     review_id: int = Field(foreign_key="reviews.id", index=True)
     uuid: UUID = Field(default_factory=uuid4,index=True, unique=True)
     risk_score: float
-    fraud_probability: float
+    confidence_score: float
 
     merchant: Merchant | None = Relationship()
     customer: Customer | None = Relationship()
@@ -162,7 +161,7 @@ class TransactionPublic(TransactionBase):
     device_type: str
     transaction_status: Status  
     risk_score: float 
-    fraud_probability: float
+    confidence_score: float
 
 class TransactionSummary(SQLModel):
     last_5_txn: Sequence[Transaction]
