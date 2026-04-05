@@ -1,6 +1,6 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router';
 import { Shield, BarChart3, Activity, LogOut, User, FlaskConical } from 'lucide-react';
-import { useAuth } from '../../features/auth/AuthContext';
+import { useAuth } from '../features/auth/AuthContext';
 
 export default function MainLayout() {
   const location          = useLocation();
@@ -43,31 +43,31 @@ export default function MainLayout() {
             }`}
           >
             <Activity className="w-5 h-5" />
-            <span className="text-sm font-medium">Operational Dashboard</span>
+            <span className="text-sm font-medium">Dashboard</span>
           </Link>
 
           <Link
-            to="/risk-intelligence"
+            to="/data-visualization"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/risk-intelligence')
+              isActive('/data-visualization')
                 ? 'bg-blue-600 text-white'
                 : 'text-slate-300 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <BarChart3 className="w-5 h-5" />
-            <span className="text-sm font-medium">Risk Analytics</span>
+            <span className="text-sm font-medium">Data Visualization</span>
           </Link>
 
           <Link
-            to="/transaction-analysis"
+            to="/transaction-creation"
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-              isActive('/transaction-analysis')
+              isActive('/transaction-creation')
                 ? 'bg-blue-600 text-white'
                 : 'text-slate-300 hover:bg-slate-800 hover:text-white'
             }`}
           >
             <FlaskConical className="w-5 h-5" />
-            <span className="text-sm font-medium">Transaction Analysis</span>
+            <span className="text-sm font-medium">Transaction Creation</span>
           </Link>
         </nav>
 

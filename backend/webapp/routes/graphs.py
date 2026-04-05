@@ -21,7 +21,7 @@ def get_graph_risk_over_time(session: SessionDep):
 
     return r
     
-@router.get("/")
+@router.get("/conf-over-risk")
 def get_graph_z(session: SessionDep):
     resource = session.exec(select(Transaction.risk_score,Transaction.confidence_score).order_by(Transaction.time.desc())).all()
 

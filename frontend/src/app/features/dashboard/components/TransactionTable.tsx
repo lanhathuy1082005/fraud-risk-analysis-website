@@ -1,12 +1,13 @@
+import { TransactionPublic } from '../services/api';
 import { CompositeRiskBar } from './CompositeRiskBar';
 
 interface TransactionTableProps {
-  transactions: Transaction[];
-  onSelectTransaction: (transaction: Transaction) => void;
+  transactions: TransactionPublic[];
+  onSelectTransaction: (transaction: TransactionPublic) => void;
 }
 
 export function TransactionTable({ transactions, onSelectTransaction }: TransactionTableProps) {
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'Escalated': return 'bg-red-100 text-red-800';
       case 'Reviewed': return 'bg-green-100 text-green-800';
@@ -56,32 +57,35 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`text-sm font-semibold ${
-                    transaction.riskScore >= 70 ? 'text-red-600' :
-                    transaction.riskScore >= 40 ? 'text-yellow-600' :
+                    transaction.risk >= 70 ? 'text-red-600' :
+                    transaction.risk >= 40 ? 'text-yellow-600' :
                     'text-green-600'
                   }`}>
-                    {transaction.riskScore}%
+                    {transaction.risk}%
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`text-sm ${
-                    transaction.confidenceLevel >= 70 ? 'text-gray-900 font-medium' : 'text-gray-500'
+                    transaction.confidence >= 70 ? 'text-gray-900 font-medium' : 'text-gray-500'
                   }`}>
-                    {transaction.confidenceLevel}%
+                    {transaction.confidence}%
                   </span>
                 </td>
                 <td className="px-4 py-4" style={{ minWidth: '180px' }}>
                   <CompositeRiskBar 
-                    riskScore={transaction.riskScore} 
-                    confidenceLevel={transaction.confidenceLevel}
+                    riskScore={transaction.risk} 
+                    confidenceLevel={transaction.confidence}
                     size="small"
                   />
                 </td>
+                { transaction.status && (
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
                     {transaction.status}
                   </span>
                 </td>
+                )
+              }
               </tr>
             ))}
           </tbody>

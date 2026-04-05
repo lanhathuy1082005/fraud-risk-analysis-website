@@ -1,9 +1,10 @@
 import { X, CheckCircle, Ban } from 'lucide-react';
-import { CompositeRiskBar } from '../../dashboard/components/CompositeRiskBar';
-import { useState } from 'react';
+import { CompositeRiskBar } from './CompositeRiskBar';
+import { TransactionPublic } from '../services/api';
+import {apiReviewTransaction} from '../services/api';
 
 interface TransactionDetailModalProps {
-  transaction: Transaction | null;
+  transaction: TransactionPublic | null;
   onClose: () => void;
 }
 
@@ -11,8 +12,8 @@ export function TransactionDetailModal({
   transaction,
   onClose,
 }: TransactionDetailModalProps) {
-  const onReview = async (status: Status) => {
-    await // call api to update the transaction status
+  const onReview = async (status: 'approved' | 'blocked') => {
+    await apiReviewTransaction({ transaction_id: transaction!.id, status: status});
   }
   if (!transaction) return null;
 
@@ -47,7 +48,7 @@ export function TransactionDetailModal({
             <div>
               <label className="text-sm text-gray-600">Timestamp</label>
               <p className="text-base font-medium text-gray-900 mt-1">
-                {transaction.timestamp.toLocaleString()}
+                {transaction.time.toLocaleString()}
               </p>
             </div>
           </div>
@@ -56,8 +57,8 @@ export function TransactionDetailModal({
           <div>
             <h3 className="text-sm font-medium text-gray-900 mb-3">Fraud Score</h3>
             <CompositeRiskBar
-              riskScore={transaction.riskScore}
-              confidenceLevel={transaction.confidenceLevel}
+              riskScore={transaction.risk}
+              confidenceLevel={transaction.confidence}
             />
           </div>
 

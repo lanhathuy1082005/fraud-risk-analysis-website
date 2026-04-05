@@ -17,48 +17,8 @@
  *   - Failure → throws an Error with a human-readable message
  */
 
-import { loadToken } from './jwt';
 
-// ─── base URL ────────────────────────────────────────────────────────────────
-
-const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000';
-
-// ─── internal helpers ─────────────────────────────────────────────────────────
-
-/**
- * Build common headers.
- * Attaches Authorization header when a token exists in sessionStorage.
- */
-function buildHeaders(includeAuth = false): HeadersInit {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  };
-
-  if (includeAuth) {
-    const token = loadToken();
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  return headers;
-}
-
-/**
- * Parse a FastAPI error response into a readable string.
- * FastAPI returns { detail: string | { msg: string }[] }
- */
-async function extractError(res: Response): Promise<string> {
-  try {
-    const body = await res.json();
-    if (typeof body.detail === 'string') return body.detail;
-    if (Array.isArray(body.detail)) {
-      return body.detail.map((d: { msg: string }) => d.msg).join(', ');
-    }
-    return `Request failed (${res.status})`;
-  } catch {
-    return `Request failed (${res.status})`;
-  }
-}
-
+import { fetchHelper } from "../../../shared/utils/apiHelpers";
 // ─── auth endpoints ───────────────────────────────────────────────────────────
 
 /**
@@ -74,15 +34,12 @@ export async function apiRegister(payload: {
   email:    string;
   password: string;
 }): Promise<void> {
-  const res = await fetch(`${BASE_URL}/auth/register`, {
-    method:  'POST',
-    headers: buildHeaders(),
-    body:    JSON.stringify(payload),
-  });
-
-  if (!res.ok) {
-    throw new Error(await extractError(res));
-  }
+  return await fetchHelper<void>('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  },
+  false // don't include auth token for registration
+  );
 }
 
 /**
@@ -96,17 +53,15 @@ export async function apiRegister(payload: {
 export async function apiLogin(email: string, password: string): Promise<string> {
 
 
-  const res = await fetch(`${BASE_URL}/auth/token`, {
-    method:  'POST',
-    headers: buildHeaders(),   // no auth header for login
-    body:    JSON.stringify({ email: email, password: password }),  // FastAPI expects "username" field
-  });
-
-  if (!res.ok) {
-    throw new Error(await extractError(res));
-  }
-
-  const data: { access_token: string; token_type: string } = await res.json();
+  const data = await fetchHelper<{ access_token: string; token_type: string }>('/auth/login', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email: email, password: password})
+  },
+  false // don't include auth token for login
+  );
   return data.access_token;
 }
 
@@ -119,115 +74,9 @@ export async function apiLogin(email: string, password: string): Promise<string>
  * Throws if the token is missing or rejected by the backend.
  */
 export async function apiGetMe(): Promise<{ email: string; name: string; uuid: string }> {
-  const res = await fetch(`${BASE_URL}/auth/me`, {
-    method:  'GET',
-    headers: buildHeaders(true),   // attach Authorization header
-  });
-
-  if (!res.ok) {
-    throw new Error(await extractError(res));
-  }
-
-  return res.json();
+  return await fetchHelper<{ email: string; name: string; uuid: string }>('/auth/me');
 }
 
-// ─── authenticated request helper ─────────────────────────────────────────────
 
-/**
- * Generic helper for any future authenticated API call.
- * Attach the JWT automatically and parse JSON response.
- *
- * Usage:
- *   const data = await authFetch<TransactionPublic[]>('/transactions');
- */
-export async function fetchHelper<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      ...buildHeaders(true),
-      ...(options.headers ?? {}),
-    },
-  });
 
-  if (!res.ok) {
-    throw new Error(await extractError(res));
-  }
 
-  return res.json() as Promise<T>;
-}
-
-// ─── transaction endpoints ────────────────────────────────────────────────────
-
-/**
- * Shared types that mirror the backend TransactionPublic schema.
- */
-export interface TransactionPublic {
-  uuid:          string;
-  amount:        number;
-  time:          string;
-  category:      string;
-  merchant_name: string;
-  customer_name: string;
-  risk:          number | null;
-  confidence:    number | null;
-}
-
-export interface TransactionCreatePayload {
-  amount:          number;
-  time:            string;        // ISO 8601
-  category:        string;        // e.g. "es_tech"
-  merchant_name:   string;
-  customer_name:   string;
-  customer_dob:    string;        // "YYYY-MM-DD"
-  customer_gender: 'M' | 'F' | 'U';
-}
-
-export interface ReviewPayload {
-  status: 'APPROVED' | 'FLAGGED' | 'PENDING';
-}
-
-/**
- * POST /transactions
- * Create a new transaction record.
- */
-export async function apiCreateTransaction(
-  payload: TransactionCreatePayload,
-): Promise<TransactionPublic> {
-  return fetchHelper<TransactionPublic>('/transactions', {
-    method: 'POST',
-    body: JSON.stringify(payload),
-  });
-}
-
-/**
- * GET /transactions
- * Retrieve all transactions (with optional filtering in future).
- */
-export async function apiGetTransactions(): Promise<TransactionPublic[]> {
-  return fetchHelper<TransactionPublic[]>('/transactions');
-}
-
-/**
- * GET /transactions/:uuid
- * Get details for one transaction.
- */
-export async function apiGetTransaction(uuid: string): Promise<TransactionPublic> {
-  return fetchHelper<TransactionPublic>(`/transactions/${uuid}`);
-}
-
-/**
- * PATCH /transactions/:uuid
- * Review / update transaction status.
- */
-export async function apiReviewTransaction(
-  uuid: string,
-  payload: ReviewPayload,
-): Promise<TransactionPublic> {
-  return fetchHelper<TransactionPublic>(`/transactions/${uuid}`, {
-    method: 'PATCH',
-    body: JSON.stringify(payload),
-  });
-}

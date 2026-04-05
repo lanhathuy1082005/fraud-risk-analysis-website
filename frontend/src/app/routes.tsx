@@ -1,10 +1,10 @@
 import { createBrowserRouter } from "react-router";
 import Login from "./features/auth/pages/Login";
 import Register from "./features/auth/pages/Register";
-import MainLayout from "./shared/components/MainLayout";
-import OperationalDashboard from "./features/dashboard/pages/OperationalDashboard";
-import RiskIntelligence from "./features/analytics/pages/RiskIntelligence";
-import TransactionAnalysis from "./features/transactions/pages/TransactionAnalysis";
+import MainLayout from "./shared/MainLayout";
+import Dashboard from "./features/dashboard/pages/Dashboard";
+import DataVisualization from "./features/analytics/pages/DataVisualization";
+import TransactionCreation from "./features/transactions/pages/TransactionCreation";
 import ProtectedRoute from "./features/auth/ProtectedRoute";
 
 export const router = createBrowserRouter([
@@ -26,15 +26,15 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "dashboard",
-        Component: OperationalDashboard,
+        Component: Dashboard,
       },
       {
-        path: "risk-intelligence",
-        Component: RiskIntelligence,
+        path: "data-visualization",
+        Component: DataVisualization,
       },
       {
-        path: "transaction-analysis",
-        Component: TransactionAnalysis,
+        path: "transaction-creation",
+        Component: TransactionCreation,
       },
     ],
   },

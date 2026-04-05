@@ -25,8 +25,8 @@ def get_dashboard_stats(session: SessionDep):
 
     return {"avg_amount_24h": avg_amount_24h, "txn_count_24h": txn_count_24h,"high_conf_high_risk_txn_count":high_conf_high_risk_txn_count}
 
-@router.get("/charts")
-def get_chart_stats(session: SessionDep):
+@router.get("/visualization")
+def get_visualization_stats(session: SessionDep):
     twenty_four_hours_ago = datetime.now(timezone.utc) - timedelta(hours=24)
     avg_risk_score_24h, avg_conf_score_24h = session.exec(
     select(

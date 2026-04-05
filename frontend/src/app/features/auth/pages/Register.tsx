@@ -86,7 +86,7 @@ export default function Register() {
   };
 
   // ── submit ────────────────────────────────────────────────────────────────
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setGlobalError('');
     if (!validate()) return;
