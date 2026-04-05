@@ -1,7 +1,7 @@
 import { RouterProvider } from 'react-router';
 import { router } from './routes.tsx';
 import { TransactionAnalysisProvider } from './context/TransactionAnalysisContext';
-import { AuthProvider } from './auth/AuthContext';
+import { AuthProvider } from './features/auth/AuthContext';
 
 export default function App() {
   return (

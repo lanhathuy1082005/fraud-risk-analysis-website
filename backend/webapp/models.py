@@ -123,7 +123,7 @@ class Review(SQLModel, table=True):
 
 class ReviewInput(SQLModel):
     status: Status 
-    user_id: int 
+    transaction_id: int
 
 """transactions"""
 class TransactionBase(SQLModel):

@@ -1,11 +1,11 @@
 import { createBrowserRouter } from "react-router";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import MainLayout from "./pages/MainLayout";
-import OperationalDashboard from "./pages/OperationalDashboard";
-import RiskIntelligence from "./pages/RiskIntelligence";
-import TransactionAnalysis from "./pages/TransactionAnalysis";
-import ProtectedRoute from "./auth/ProtectedRoute";
+import Login from "./features/auth/pages/Login";
+import Register from "./features/auth/pages/Register";
+import MainLayout from "./shared/components/MainLayout";
+import OperationalDashboard from "./features/dashboard/pages/OperationalDashboard";
+import RiskIntelligence from "./features/analytics/pages/RiskIntelligence";
+import TransactionAnalysis from "./features/transactions/pages/TransactionAnalysis";
+import ProtectedRoute from "./features/auth/ProtectedRoute";
 
 export const router = createBrowserRouter([
   {
