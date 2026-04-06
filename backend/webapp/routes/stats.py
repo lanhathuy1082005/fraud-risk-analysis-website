@@ -16,6 +16,9 @@ def get_dashboard_stats(session: SessionDep):
     ).where(Transaction.time >= twenty_four_hours_ago)
     ).one()
     
+    if not avg_amount_24h:
+        avg_amount_24h = 0
+
     high_conf_high_risk_txn_count = session.exec(
     select(
         func.count(Transaction.id),
@@ -34,6 +37,11 @@ def get_visualization_stats(session: SessionDep):
         func.avg(Transaction.confidence_score),
     ).where(Transaction.time >= twenty_four_hours_ago)
     ).one()   
+
+    if not avg_risk_score_24h:
+        avg_risk_score_24h = 0
+    if not avg_conf_score_24h:
+        avg_conf_score_24h = 0
 
     return {"avg_risk_score_24h": avg_risk_score_24h, "avg_conf_score_24h": avg_conf_score_24h}
     

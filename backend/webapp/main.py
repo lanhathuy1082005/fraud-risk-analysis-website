@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from db import create_db_and_tables
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, transactions, reviews, graphs
+from routes import auth, transactions, reviews, graphs,stats
 from utils.load_components import *
 
 @asynccontextmanager
@@ -37,4 +37,5 @@ app.include_router(auth.router)
 app.include_router(transactions.router)
 app.include_router(reviews.router)
 app.include_router(graphs.router)
+app.include_router(stats.router)
 

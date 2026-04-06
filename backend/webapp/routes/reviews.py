@@ -11,7 +11,7 @@ router = APIRouter(prefix="/review", dependencies=[Depends(get_current_user)])
 @router.post("/")
 def review_transaction(session: SessionDep, user: CurrentUser, review_data: ReviewInput):
     new_rw = Review(status=review_data.status,
-                    user_id=user.uuid)
+                    user_uuid=user.uuid)
 
     session.add(new_rw)
     session.flush()
@@ -24,10 +24,12 @@ def review_transaction(session: SessionDep, user: CurrentUser, review_data: Revi
     if updated_txn.review_id:
         raise HTTPException(status_code=400, detail="Transaction already reviewed")
     
-    updated_txn = new_rw.id
-
+    updated_txn.review_id = new_rw.id
+    
+    
     try:
         session.commit()
+        return {"msg": "Review created successfully"}
     except IntegrityError:
         session.rollback()
         raise HTTPException(status_code=409,detail="Please try again")

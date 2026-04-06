@@ -118,7 +118,7 @@ class Review(SQLModel, table=True):
     __tablename__ = "reviews"
     id: int | None = Field(default=None, primary_key=True)
     status: Status 
-    user_id: int = Field(foreign_key="users.id", index=True)
+    user_uuid: UUID = Field(foreign_key="users.uuid", index=True)
     reviewed_at: datetime = Field(default_factory=get_current_time, sa_column=Column(DateTime(timezone=True)))
 
 class ReviewInput(SQLModel):
