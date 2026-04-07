@@ -6,7 +6,7 @@ import { fetchHelper } from "../../../shared/utils/apiHelpers";
  * Shared types that mirror the backend TransactionPublic schema.
  */
 export interface TransactionPublic {
-  id:           number;
+  id:           number | null;
   uuid:          string;
   amount:        number;
   time:          string;

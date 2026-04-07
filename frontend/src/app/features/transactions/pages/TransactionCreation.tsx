@@ -12,6 +12,7 @@ import {
   Cpu,
   Zap,
 } from 'lucide-react';
+import { apiCreateTransaction } from '../services/api';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -41,7 +42,7 @@ enum Category {
 
   
 interface TransactionFormData {
-  customerId:      string;
+  customerId:      number | null;
   amount:          string;
   merchantName:      string;
   transactionTime: string;
@@ -53,7 +54,7 @@ interface TransactionFormData {
 }
 
 const emptyForm = (): TransactionFormData => ({
-  customerId:      '',
+  customerId:      null,
   amount:          '',
   merchantName:      '',
   transactionTime: '',
@@ -67,9 +68,9 @@ const emptyForm = (): TransactionFormData => ({
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const GENDERS     = [
-  { label: "Male", value: "male" },
-  { label: "Female", value: "female" },
-  { label: "Other", value: "other" },
+  { label: "Male", value: "M" },
+  { label: "Female", value: "F" },
+  { label: "Other", value: "U" },
 ] as const;
 
 const CATEGORIES  = [
@@ -105,9 +106,21 @@ export default function TransactionAnalysis() {
     setForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleCreate = () => {
-
-    
+  const handleCreate = async () => {
+    const response = {
+      amount: parseFloat(form.amount),
+      time: new Date(form.transactionTime).toISOString(),
+      category: form.category,
+      merchant_name: form.merchantName,
+      customer_id: form.customerId,
+      device_name: form.deviceName,
+      customer_dob: form.DoB,
+      customer_gender: form.customerGender,
+      model_key: form.model
+    }
+    console.log('Creating transaction with payload:', response);
+     await apiCreateTransaction(response);
+    navigate('/dashboard');
   };
 
   const handleReset = () => {
@@ -149,17 +162,17 @@ export default function TransactionAnalysis() {
                   Customer ID
                 </label>
                 <input
-                  type="text"
-                  value={form.customerId}
+                  type="number"
+                  value={form.customerId || ''}
                   onChange={e => handleChange('customerId', e.target.value)}
-                  placeholder="e.g., CUST001"
+                  placeholder="e.g., 001"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <DollarSign className="w-4 h-4 inline mr-2" />
-                  Amount ($)
+                  Amount ($) 
                 </label>
                 <input
                   type="number"
