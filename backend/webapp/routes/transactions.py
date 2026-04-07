@@ -58,14 +58,14 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                             gender=txn_data.customer_gender,
                                             amount=txn_data.amount,
                                             time=txn_data.time), session=session)
+        if not customer:
+            raise ValueError("Cannot complete transaction due to transaction being earlier than the last")
         
         #upsert junction tables (retrieving customer primary device and categories for risk calculation)
         c_d_data = upsert_customer_device(device=device,customer=customer,session=session)
 
         c_c_data = upsert_customer_category(txn_data=txn_data, customer=customer, session=session)
-        
-        if not customer:
-            raise ValueError("Cannot complete transaction due to transaction being earlier than the last")
+    
 
         last_5_txn = get_last_5_txn(customer_id=customer.id,session=session)
 
@@ -104,6 +104,7 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
         raise HTTPException(status_code=409, detail="Conflict, try again")
     except ValueError as e:
         session.rollback()
+        print(e)
         raise HTTPException(status_code=400, detail=str(e))
     except KeyError:
         session.rollback()
