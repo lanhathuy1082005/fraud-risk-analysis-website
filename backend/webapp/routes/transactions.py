@@ -80,8 +80,8 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                         merchant_freq=merchant.frequency)
 
         #infering to the models
-        confidence_score = get_conf_score(app= request.app, txn_data= txn_data, txn_summary=txn_summary)
-        risk_score = get_risk_score(z_scores=z_scores,
+        risk_score = get_risk_score(app= request.app, txn_data= txn_data, txn_summary=txn_summary)
+        confidence_score = get_conf_score(z_scores=z_scores,
                                     txn_data=txn_data,
                                     customer=customer,
                                     c_d_data=c_d_data,
