@@ -13,7 +13,7 @@ export function TransactionDetailModal({
   onClose,
 }: TransactionDetailModalProps) {
   const onReview = async (status: 'approved' | 'blocked') => {
-    await apiReviewTransaction({ transaction_id: transaction!.id, status: status});
+    await apiReviewTransaction({ transaction_id: transaction!.id, status: status });
   }
   if (!transaction) return null;
 
@@ -57,8 +57,8 @@ export function TransactionDetailModal({
           <div>
             <h3 className="text-sm font-medium text-gray-900 mb-3">Fraud Score</h3>
             <CompositeRiskBar
-              riskScore={transaction.risk}
-              confidenceLevel={transaction.confidence}
+              riskScore={transaction.risk_score}
+              confidenceLevel={transaction.confidence_score}
             />
           </div>
 

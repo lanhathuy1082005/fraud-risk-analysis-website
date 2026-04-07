@@ -12,10 +12,9 @@ export interface TransactionPublic {
   time:          string;
   category:      string;
   merchant_name: string;
-  customer_name: string;
-  risk:          number;
-  confidence:    number;
-  status:        string| null;
+  risk_score:    number;
+  confidence_score:    number;
+  transaction_status:        string| null;
 }
 
 export interface DashboardStats {
@@ -42,7 +41,7 @@ export async function apiGetTransactions(): Promise<TransactionPublic[]> {
  * Submit a review for a transaction (approve/reject).
  * Payload: { transaction_uuid: string, decision: 'approved' | 'blocked' }
  */
-export async function apiReviewTransaction(payload: { transaction_id: number, status: 'approved' | 'blocked' }): Promise<void> {
+export async function apiReviewTransaction(payload: { transaction_id: number| null, status: 'approved' | 'blocked' }): Promise<void> {
   await fetchHelper<void>(`/reviews`, {
     method: 'POST',
     body: JSON.stringify(payload),
