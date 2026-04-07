@@ -57,31 +57,31 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`text-sm font-semibold ${
-                    transaction.risk >= 70 ? 'text-red-600' :
-                    transaction.risk >= 40 ? 'text-yellow-600' :
+                    transaction.risk_score * 100 >= 70 ? 'text-red-600' :
+                    transaction.risk_score * 100 >= 40 ? 'text-yellow-600' :
                     'text-green-600'
                   }`}>
-                    {transaction.risk}%
+                    {transaction.risk_score * 100}%
                   </span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className={`text-sm ${
-                    transaction.confidence >= 70 ? 'text-gray-900 font-medium' : 'text-gray-500'
+                    transaction.confidence_score * 100 >= 70 ? 'text-gray-900 font-medium' : 'text-gray-500'
                   }`}>
-                    {transaction.confidence}%
+                    {transaction.confidence_score * 100}%
                   </span>
                 </td>
                 <td className="px-4 py-4" style={{ minWidth: '180px' }}>
                   <CompositeRiskBar 
-                    riskScore={transaction.risk} 
-                    confidenceLevel={transaction.confidence}
+                    riskScore={transaction.risk_score * 100} 
+                    confidenceLevel={transaction.confidence_score * 100}
                     size="small"
                   />
                 </td>
-                { transaction.status && (
+                { transaction.transaction_status && (
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.status)}`}>
-                    {transaction.status}
+                  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(transaction.transaction_status)}`}>
+                    {transaction.transaction_status}
                   </span>
                 </td>
                 )
