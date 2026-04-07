@@ -50,7 +50,7 @@ export async function apiReviewTransaction(payload: { transaction_id: number, st
 }
 
 export async function apiGetDashboardStats(): Promise<DashboardStats> {
-  return await fetchHelper<DashboardStats>(`stats/dashboard/`, {
+  return await fetchHelper<DashboardStats>(`/stats/dashboard/`, {
     method: 'GET',
   });
 }

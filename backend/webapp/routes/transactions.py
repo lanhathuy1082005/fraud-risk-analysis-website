@@ -70,7 +70,7 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
         last_5_txn = get_last_5_txn(customer_id=customer.id,session=session)
 
         #last 10 hours (10 steps)
-        recent_txn_count = get_recent_txn_count(now=txn_data.time,customer_id=customer.id,session=session)
+        recent_txn_count = get_recent_txn_count(entered_date=txn_data.time,customer_id=customer.id,session=session)
     
 
         txn_summary = TransactionSummary(last_5_txn=last_5_txn,
@@ -100,6 +100,7 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
         return {"msg":"transaction_created"}
     except IntegrityError as e:
         session.rollback()
+        print(e.orig)
         raise HTTPException(status_code=409, detail="Conflict, try again")
     except ValueError as e:
         session.rollback()

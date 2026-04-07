@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   LineChart, Line, AreaChart, Area, ScatterChart, Scatter,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
 import { TrendingUp, Activity} from 'lucide-react';
@@ -17,6 +17,10 @@ export default function DataVisualization() {
   const [riskOverTime, setRiskOverTime] = useState<{ x: any, y: any }[]>([]);
   const [confidenceOverTime, setConfidenceOverTime] = useState<{ x: any, y: any }[]>([]);
   const [confidenceOverRisk, setConfidenceOverRisk] = useState<{ x: any, y: any }[]>([]);
+  const formatDateTime = (val: string) => 
+  new Date(val).toLocaleDateString([], { month: 'short', day: 'numeric' }) + 
+  ' ' + 
+  new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
 
   useEffect(() => {
@@ -29,12 +33,12 @@ export default function DataVisualization() {
       ]);
 
       setStats({
-        avgRisk: statsData.avg_risk_score_24h,
-        avgConfidence: statsData.avg_conf_score_24h
+        avgRisk: statsData.avg_risk_score_24h*100,
+        avgConfidence: statsData.avg_conf_score_24h*100
       });
-      setRiskOverTime(riskData);
-      setConfidenceOverTime(confidenceData);
-      setConfidenceOverRisk(confidenceRiskData);
+      setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
+      setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
+      setConfidenceOverRisk(confidenceRiskData.map((d: { x: any, y: any }) => ({ x: d.x * 100, y: d.y * 100 })));
     };
 
     fetchPageData();
@@ -83,7 +87,12 @@ export default function DataVisualization() {
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={riskOverTime}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="time" tick={{ fontSize: 11 }} stroke="#6b7280" interval={4} />
+              <XAxis 
+                dataKey="x" 
+                tickFormatter={formatDateTime}
+                tick={{ fontSize: 11 }} 
+                stroke="#6b7280" 
+                interval={4} />
               <YAxis
                 domain={[0, 100]}
                 tick={{ fontSize: 12 }}
@@ -92,13 +101,14 @@ export default function DataVisualization() {
               />
               <Tooltip
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+                labelFormatter={formatDateTime}
               />
               <ReferenceLine y={70} stroke="#dc2626" strokeDasharray="3 3" label={{ value: 'High Risk', position: 'right', fontSize: 10 }} />
               <ReferenceLine y={40} stroke="#eab308" strokeDasharray="3 3" label={{ value: 'Medium Risk', position: 'right', fontSize: 10 }} />
 
               <Line
                 type="monotone"
-                dataKey="avgRisk"
+                dataKey="y"
                 stroke="#dc2626"
                 strokeWidth={2}
                 dot={false}
@@ -125,7 +135,12 @@ export default function DataVisualization() {
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-              <XAxis dataKey="time" tick={{ fontSize: 11 }} stroke="#6b7280" interval={4} />
+              <XAxis 
+                dataKey="x" 
+                tickFormatter={formatDateTime}
+                tick={{ fontSize: 11 }} 
+                stroke="#6b7280" 
+                interval={4} />
               <YAxis
                 domain={[0, 100]}
                 tick={{ fontSize: 12 }}
@@ -134,10 +149,11 @@ export default function DataVisualization() {
               />
               <Tooltip
                 contentStyle={{ backgroundColor: 'white', border: '1px solid #e5e7eb', borderRadius: '8px', fontSize: '12px' }}
+                labelFormatter={formatDateTime}
               />
               <Area
                 type="monotone"
-                dataKey="avgRisk"
+                dataKey="y"
                 stroke="#3b82f6"
                 fillOpacity={1}
                 fill="url(#ipGradient)"

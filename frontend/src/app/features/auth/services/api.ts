@@ -53,7 +53,7 @@ export async function apiRegister(payload: {
 export async function apiLogin(email: string, password: string): Promise<string> {
 
 
-  const data = await fetchHelper<{ access_token: string; token_type: string }>('/auth/login', {
+  const data = await fetchHelper<{ access_token: string; token_type: string }>('/auth/token', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',

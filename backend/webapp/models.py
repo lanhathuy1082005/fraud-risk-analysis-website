@@ -182,7 +182,7 @@ class CustomerDevice(SQLModel, table=True):
 
 class CustomerCategory(SQLModel, table=True):
     __tablename__ = "customer_categories"
-    customer_id: int = Field(foreign_key="customers.id", index=True)
+    customer_id: int = Field(foreign_key="customers.id", primary_key=True)
     category: Category = Field(primary_key=True)
     frequency: int 
 

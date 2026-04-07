@@ -9,3 +9,6 @@ Your **backend** code project. It contains the code project(s) for all the backe
      - `webapp`: for the backend web application development
      - `dapp`: (distributed app) for smart contract development
 
+uvicorn main:app --reload
+
+create .env file
