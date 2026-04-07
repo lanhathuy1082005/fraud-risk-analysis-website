@@ -73,8 +73,8 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 </td>
                 <td className="px-4 py-4" style={{ minWidth: '180px' }}>
                   <CompositeRiskBar 
-                    riskScore={transaction.risk_score * 100} 
-                    confidenceLevel={transaction.confidence_score * 100}
+                    riskScore={transaction.risk_score} 
+                    confidenceScore={transaction.confidence_score}  
                     size="small"
                   />
                 </td>

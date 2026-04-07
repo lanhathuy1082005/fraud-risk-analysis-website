@@ -58,7 +58,7 @@ export function TransactionDetailModal({
             <h3 className="text-sm font-medium text-gray-900 mb-3">Fraud Score</h3>
             <CompositeRiskBar
               riskScore={transaction.risk_score}
-              confidenceLevel={transaction.confidence_score}
+              confidenceScore={transaction.confidence_score}
             />
           </div>
 

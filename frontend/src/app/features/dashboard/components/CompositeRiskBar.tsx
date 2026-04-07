@@ -1,10 +1,10 @@
 interface CompositeRiskBarProps {
   riskScore: number;
-  confidenceLevel: number;
+  confidenceScore: number;
   size?: 'small' | 'large';
 }
 
-export function CompositeRiskBar({ riskScore, confidenceLevel, size = 'large' }: CompositeRiskBarProps) {
+export function CompositeRiskBar({ riskScore, confidenceScore, size = 'large' }: CompositeRiskBarProps) {
   const getRiskColor = (risk: number) => {
     if (risk >= 70) return 'rgb(220, 38, 38)'; // red-600
     if (risk >= 40) return 'rgb(234, 179, 8)'; // yellow-500
@@ -17,15 +17,15 @@ export function CompositeRiskBar({ riskScore, confidenceLevel, size = 'large' }:
   };
 
   const getRiskLabel = () => {
-    if (riskScore >= 70 && confidenceLevel >= 70) return 'High Risk - High Confidence';
-    if (riskScore >= 70 && confidenceLevel < 70) return 'High Risk - Low Confidence';
-    if (riskScore < 40 && confidenceLevel >= 70) return 'Low Risk - High Confidence';
-    if (riskScore < 40 && confidenceLevel < 70) return 'Low Risk - Low Confidence';
+    if (riskScore*100 >= 70 && confidenceScore*100 >= 70) return 'High Risk - High Confidence';
+    if (riskScore*100 >= 70 && confidenceScore*100 < 70) return 'High Risk - Low Confidence';
+    if (riskScore*100 < 40 && confidenceScore*100 >= 70) return 'Low Risk - High Confidence';
+    if (riskScore*100 < 40 && confidenceScore*100 < 70) return 'Low Risk - Low Confidence';
     return 'Medium Risk';
   };
 
-  const barColor = getRiskColor(riskScore);
-  const opacity = getOpacity(confidenceLevel);
+  const barColor = getRiskColor(riskScore*100);
+  const opacity = getOpacity(confidenceScore*100);
   const height = size === 'small' ? '8px' : '24px';
 
   return (
@@ -37,10 +37,10 @@ export function CompositeRiskBar({ riskScore, confidenceLevel, size = 'large' }:
         <div
           className="h-full transition-all duration-300"
           style={{
-            width: `${riskScore}%`,
+            width: `${riskScore*100}%`,
             backgroundColor: barColor,
             opacity: Math.max(opacity, 0.3),
-            backgroundImage: confidenceLevel < 50 ? 
+            backgroundImage: confidenceScore*100 < 50 ? 
               'repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(255,255,255,0.3) 4px, rgba(255,255,255,0.3) 8px)' 
               : 'none'
           }}
@@ -49,7 +49,7 @@ export function CompositeRiskBar({ riskScore, confidenceLevel, size = 'large' }:
       {size === 'large' && (
         <div className="flex justify-between items-center text-xs">
           <span className="text-gray-600">
-            Risk: {riskScore}% | Confidence: {confidenceLevel}%
+            Risk: {riskScore*100}% | Confidence: {confidenceScore*100}%
           </span>
           <span className="text-gray-500 italic">{getRiskLabel()}</span>
         </div>
