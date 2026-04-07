@@ -36,18 +36,18 @@ def generate_data(app : FastAPI,  txn_data: TransactionInput, txn_summary: Trans
     return df_encoded
 
 
-def get_conf_score(app: FastAPI, txn_data: TransactionInput, txn_summary: TransactionSummary):
+def get_risk_score(app: FastAPI, txn_data: TransactionInput, txn_summary: TransactionSummary):
 
     df = generate_data(app=app,txn_data=txn_data,txn_summary=txn_summary)
     chosen_model = app.state.models[txn_data.model_key]
 
-    conf_score = chosen_model.predict_proba(df)
+    risk_score = chosen_model.predict_proba(df)
 
-    return round(float(conf_score[0][1]), 2)
+    return round(float(risk_score[0][1]), 2)
 
 Z_CAP = 5.0
 
-def get_risk_score(
+def get_conf_score(
                 z_scores: dict[str,float], 
                 txn_data: TransactionInput, 
                 customer: Customer, 
@@ -70,11 +70,11 @@ def get_risk_score(
     if c_c_data and txn_data.category != c_c_data.category:
         penalties += 0.05
 
-    risk_score = (
+    conf_score = (
     w_amount * get_z_cap(z_scores["amount"], Z_CAP) #amount_anomaly
     + w_device * get_z_cap(z_scores["device"], Z_CAP) #device_anomaly
     + w_time * get_z_cap(z_scores["time"], Z_CAP) #time_anomaly
     )
 
 
-    return round(min( risk_score + penalties , 1.0), 2)
+    return round(min( conf_score + penalties , 1.0), 2)
