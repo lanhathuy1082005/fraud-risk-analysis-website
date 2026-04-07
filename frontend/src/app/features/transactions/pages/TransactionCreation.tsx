@@ -133,6 +133,15 @@ export default function TransactionAnalysis() {
 
   return (
     <div className="space-y-6">
+      <button className='px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition'
+        style={{
+          padding: "10px 16px",
+          fontSize: "14px",
+          cursor: "pointer",
+        }}
+      >
+        Generate Mock Data
+      </button>
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
