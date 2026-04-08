@@ -62,8 +62,6 @@ def upsert_customer(device: Device, customer_data: CustomerInput, session: Sessi
                     "device": 0.0
                     }
     else:
-        if customer.last_txn_time and customer_data.time <= customer.last_txn_time:
-            return None, None
         # increment counts
         customer.txn_count += 1
         customer.device_count += 1

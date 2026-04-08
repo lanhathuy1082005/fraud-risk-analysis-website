@@ -21,3 +21,9 @@ export async function apiCreateTransaction(
     body: JSON.stringify(payload),
   });
 }
+
+export async function apiMockTransactions(): Promise<void> {
+  await fetchHelper<void>('/transactions/mock', {
+    method: 'GET',
+  });
+}

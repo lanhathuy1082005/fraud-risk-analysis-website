@@ -13,18 +13,19 @@ export default function Dashboard() {
   const [transactions, setTransactions] = useState<TransactionPublic[]>([]);
   const [dashboardStats, setDashboardStats] = useState(
     {
-    avgAmount: 0,
-    transactionCount:0,
-    highConfAndhighRisk:0
+      avgAmount: 0,
+      transactionCount:0,
+      highConfAndhighRisk:0
     }
   )
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNextPage, setHasNextPage] = useState(false);
+  const pageSize = 5;
 
-
-useEffect(() => {
   const fetchData = async () => {
-    const [stats, txns] = await Promise.all([
+    const [stats, pageData] = await Promise.all([
       apiGetDashboardStats(),
-      apiGetTransactions(),
+      apiGetTransactions(currentPage, pageSize),
     ]);
 
     setDashboardStats({
@@ -32,11 +33,29 @@ useEffect(() => {
       transactionCount: stats.txn_count_24h,
       highConfAndhighRisk: stats.high_conf_high_risk_txn_count,
     });
-    setTransactions(txns);
+    setTransactions(pageData.transactions);
+    setHasNextPage(pageData.hasNextPage);
   };
 
-  fetchData();
-}, []);
+  const loadPage = async (page: number) => {
+    setCurrentPage(page);
+    const [stats, pageData] = await Promise.all([
+      apiGetDashboardStats(),
+      apiGetTransactions(page, pageSize),
+    ]);
+
+    setDashboardStats({
+      avgAmount: stats.avg_amount_24h,
+      transactionCount: stats.txn_count_24h,
+      highConfAndhighRisk: stats.high_conf_high_risk_txn_count,
+    });
+    setTransactions(pageData.transactions);
+    setHasNextPage(pageData.hasNextPage);
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -75,12 +94,35 @@ useEffect(() => {
           transactions={transactions}
           onSelectTransaction={setSelectedTransaction}
         />
+
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-sm text-gray-600">
+            Page {currentPage} · Showing {transactions.length} transaction(s)
+          </p>
+          <div className="inline-flex items-center rounded-lg border border-gray-200 bg-white shadow-sm">
+            <button
+              onClick={() => loadPage(Math.max(1, currentPage - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:text-gray-400"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => loadPage(currentPage + 1)}
+              disabled={!hasNextPage}
+              className="px-3 py-2 text-sm font-medium text-gray-700 disabled:cursor-not-allowed disabled:text-gray-400"
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Transaction Detail Modal */}
       <TransactionDetailModal
         transaction={selectedTransaction}
         onClose={() => setSelectedTransaction(null)}
+        fetchData={fetchData}
       />
     </div>
   );

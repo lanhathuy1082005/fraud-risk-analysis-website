@@ -9,10 +9,8 @@ interface TransactionTableProps {
 export function TransactionTable({ transactions, onSelectTransaction }: TransactionTableProps) {
   const getStatusColor = (status: string | null) => {
     switch (status) {
-      case 'Escalated': return 'bg-red-100 text-red-800';
-      case 'Reviewed': return 'bg-green-100 text-green-800';
-      case 'Pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'blocked': return 'bg-red-100 text-red-800';
+      case 'approved': return 'bg-green-100 text-green-800';
     }
   };
 

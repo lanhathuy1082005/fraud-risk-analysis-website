@@ -10,7 +10,7 @@ const BASE_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http:/
  * Build common headers.
  * Attaches Authorization header when a token exists in sessionStorage.
  */
-export function buildHeaders(includeAuth = false): HeadersInit {
+export function buildHeaders(includeAuth: boolean): HeadersInit {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };

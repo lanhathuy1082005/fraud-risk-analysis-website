@@ -11,6 +11,7 @@ export interface TransactionPublic {
   amount:        number;
   time:          string;
   category:      string;
+  customer_id: number | null;
   merchant_name: string;
   risk_score:    number;
   confidence_score:    number;
@@ -32,8 +33,18 @@ export interface DashboardStats {
  * GET /transactions
  * Retrieve all transactions (with optional filtering in future).
  */
-export async function apiGetTransactions(): Promise<TransactionPublic[]> {
-  return await fetchHelper<TransactionPublic[]>('/transactions');
+export interface TransactionPage {
+  transactions: TransactionPublic[];
+  hasNextPage: boolean;
+}
+
+export async function apiGetTransactions(page = 1, limit = 10): Promise<TransactionPage> {
+  const response = await fetchHelper<TransactionPublic[]>(`/transactions/?page=${page}&limit=${limit + 1}`, {}, true);
+  const hasNextPage = response.length > limit;
+  return {
+    transactions: response.slice(0, limit),
+    hasNextPage,
+  };
 }
 
 /**
@@ -42,14 +53,14 @@ export async function apiGetTransactions(): Promise<TransactionPublic[]> {
  * Payload: { transaction_uuid: string, decision: 'approved' | 'blocked' }
  */
 export async function apiReviewTransaction(payload: { transaction_id: number| null, status: 'approved' | 'blocked' }): Promise<void> {
-  await fetchHelper<void>(`/reviews`, {
+  await fetchHelper<void>(`/review`, {
     method: 'POST',
     body: JSON.stringify(payload),
-  });
+  }, true);
 }
 
 export async function apiGetDashboardStats(): Promise<DashboardStats> {
   return await fetchHelper<DashboardStats>(`/stats/dashboard/`, {
     method: 'GET',
-  });
+  }, true);
 }

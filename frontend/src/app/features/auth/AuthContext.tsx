@@ -52,6 +52,16 @@ interface AuthContextType extends AuthState {
   register: (payload: RegisterPayload)        => Promise<{ success: boolean; error?: string }>;
 }
 
+function buildUserFromMe(data: { email: string; name: string; uuid: string }): JWTPayload {
+  return {
+    sub: data.email,
+    email: data.email,
+    name: data.name,
+    iat: 0,
+    exp: 0,
+  };
+}
+
 // ─── context ─────────────────────────────────────────────────────────────────
 
 const AuthContext = createContext<AuthContextType>({
@@ -90,14 +100,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (stored && !isTokenExpired(stored)) {
         try {
           // Verify with the backend — throws if token is invalid/expired server-side
-          await apiGetMe();
+          const data = await apiGetMe();
 
-          // Token is valid — decode claims for the UI
-          const payload = decodeToken(stored);
-          if (payload) {
-            setState({ isAuthenticated: true, isLoading: false, user: payload, token: stored });
-            return;
-          }
+          // Token is valid — prefer the user data returned from /auth/me
+          const payload = decodeToken(stored) ?? buildUserFromMe(data);
+          const user = payload.email && payload.name ? payload : buildUserFromMe(data);
+
+          setState({ isAuthenticated: true, isLoading: false, user, token: stored });
+          return;
         } catch {
           // Backend rejected the token — clean up silently
           removeToken();
@@ -119,27 +129,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // On success the backend returns { access_token, token_type }.
   // We save the token, decode the payload, and update state.
   //
-  const login = async (
-    email:    string,
-    password: string,
-  ): Promise<{ success: boolean; error?: string }> => {
-    try {
-      const token   = await apiLogin(email, password);
-      const payload = decodeToken(token);
+const login = async (email: string, password: string) => {
+  try {
+    const token = await apiLogin(email, password);
+    
+    saveToken(token); // ✅ save FIRST
 
-      if (!payload) {
-        return { success: false, error: 'Received an invalid token from the server.' };
-      }
-
-      saveToken(token);
-      setState({ isAuthenticated: true, isLoading: false, user: payload, token });
-      return { success: true };
-
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
-      return { success: false, error: message };
+    let payload = decodeToken(token);
+    if (!payload || !payload.email || !payload.name) {
+      const data = await apiGetMe(); // now loadToken() works
+      payload = buildUserFromMe(data);
     }
-  };
+
+    if (!payload) {
+      removeToken(); // clean up if something still went wrong
+      return { success: false, error: 'Received an invalid token from the server.' };
+    }
+
+    setState({ isAuthenticated: true, isLoading: false, user: payload, token });
+    return { success: true };
+
+  } catch (err) {
+    removeToken(); // clean up on any failure
+    const message = err instanceof Error ? err.message : 'Login failed. Please try again.';
+    return { success: false, error: message };
+  }
+};
 
   // ── register ──────────────────────────────────────────────────────────────
   //

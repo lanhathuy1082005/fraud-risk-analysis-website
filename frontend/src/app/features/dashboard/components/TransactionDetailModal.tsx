@@ -1,16 +1,18 @@
 import { X, CheckCircle, Ban } from 'lucide-react';
 import { CompositeRiskBar } from './CompositeRiskBar';
 import { TransactionPublic } from '../services/api';
-import {apiReviewTransaction} from '../services/api';
+import { apiReviewTransaction } from '../services/api';
 
 interface TransactionDetailModalProps {
   transaction: TransactionPublic | null;
   onClose: () => void;
+  fetchData: () => void;
 }
 
 export function TransactionDetailModal({
   transaction,
   onClose,
+  fetchData,
 }: TransactionDetailModalProps) {
   const onReview = async (status: 'approved' | 'blocked') => {
     await apiReviewTransaction({ transaction_id: transaction!.id, status: status });
@@ -70,9 +72,12 @@ export function TransactionDetailModal({
           >
             Close
           </button>
+          {!transaction.transaction_status && (
+          <>
           <button
-            onClick={() => {
-              onReview('approved');
+            onClick={async () => {
+              await onReview('approved');
+              await fetchData();
               onClose();
             }}
             className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
@@ -81,8 +86,9 @@ export function TransactionDetailModal({
             Approve
           </button>
           <button
-            onClick={() => {
-              onReview('blocked');
+            onClick={async () => {
+              await onReview('blocked');
+              await fetchData();
               onClose();
             }}
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
@@ -90,6 +96,8 @@ export function TransactionDetailModal({
             <Ban className="w-4 h-4" />
             Block
           </button>
+          </>
+        )}
         </div>
       </div>
     </div>

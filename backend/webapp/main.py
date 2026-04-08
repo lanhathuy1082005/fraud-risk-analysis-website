@@ -11,8 +11,7 @@ async def lifespan(app : FastAPI):
     
         # Load the model
     app.state.models = {"gb": load_model("gb_model"),
-                        "log": load_model("log_model"),
-                        "rf": load_model("rf_model")}
+                        "log": load_model("log_model")}
 
     # Load feature information
     app.state.feature_columns = load_features("feature_columns")

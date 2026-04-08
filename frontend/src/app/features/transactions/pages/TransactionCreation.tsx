@@ -12,7 +12,7 @@ import {
   Cpu,
   Zap,
 } from 'lucide-react';
-import { apiCreateTransaction } from '../services/api';
+import { apiCreateTransaction, apiMockTransactions } from '../services/api';
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -92,8 +92,7 @@ const CATEGORIES  = [
 const DEVICE_TYPES = ['Mobile', 'Desktop', 'Tablet', 'Unknown'] as const;
 const MODELS      = [
   { label: "Model LOG", value: "log" },
-  { label: "Model GB", value: "gb" },
-  { label: "Model RF", value: "rf" }
+  { label: "Model GB", value: "gb" }
 ] as const;
 
 // ─── component ───────────────────────────────────────────────────────────────
@@ -117,11 +116,15 @@ export default function TransactionAnalysis() {
       customer_dob: form.DoB,
       customer_gender: form.customerGender,
       model_key: form.model
-    }
-    console.log('Creating transaction with payload:', response);
+    };
      await apiCreateTransaction(response);
     navigate('/dashboard');
   };
+
+  const handleMockData = async () => {
+    await apiMockTransactions();
+    navigate('/dashboard');
+  }
 
   const handleReset = () => {
     setForm(emptyForm());
@@ -139,6 +142,7 @@ export default function TransactionAnalysis() {
           fontSize: "14px",
           cursor: "pointer",
         }}
+        onClick={handleMockData}
       >
         Generate Mock Data
       </button>

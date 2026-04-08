@@ -26,7 +26,7 @@ export default function DataVisualization() {
   const [selectedCustomer, setSelectedCustomer] = useState<string>('');
 
   const customerIds = useMemo(
-    () => [...new Set(allTransactions.map((t) => String(t.id)))].sort((a, b) => Number(a) - Number(b)),
+    () => [...new Set(allTransactions.map((t) => String(t.customer_id)))].sort((a, b) => Number(a) - Number(b)),
     [allTransactions]
   );
 
@@ -58,7 +58,7 @@ export default function DataVisualization() {
     if (!selectedCustomer) return riskOverTime;
     const times = new Set(
       allTransactions
-        .filter((t) => String(t.id) === selectedCustomer)
+        .filter((t) => String(t.customer_id) === selectedCustomer)
         .map((t) => t.time)
     );
     return riskOverTime.filter((d) => times.has(d.x));
@@ -67,7 +67,7 @@ export default function DataVisualization() {
   const filteredConfidenceOverTime = useMemo(() => {
     if (!selectedCustomer) return confidenceOverTime;
     const customerTxns = allTransactions.filter(
-      (t) => String(t.id) === selectedCustomer
+      (t) => String(t.customer_id) === selectedCustomer
     );
     return customerTxns.map((t) => ({
       x: t.time,
@@ -78,7 +78,7 @@ export default function DataVisualization() {
   const filteredConfidenceOverRisk = useMemo(() => {
     if (!selectedCustomer) return confidenceOverRisk;
     const customerTxns = allTransactions.filter(
-      (t) => String(t.id) === selectedCustomer
+      (t) => String(t.customer_id) === selectedCustomer
     );
     return customerTxns.map((t) => ({
       x: t.risk_score * 100,

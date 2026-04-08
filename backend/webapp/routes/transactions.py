@@ -1,13 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone, timedelta
 from core.deps import SessionDep, get_current_user
+from core.config import settings
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
-from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput
+from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput, Category, Gender
 from services.ml_pipeline import get_conf_score, get_risk_score
 from services.transactions import upsert_customer,upsert_device,upsert_merchant, upsert_customer_category, upsert_customer_device
 from utils.statistics import get_last_5_txn, get_recent_txn_count
+import random
 
 router = APIRouter(prefix="/transactions", dependencies=[Depends(get_current_user)])
 
@@ -109,6 +111,55 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
     except KeyError:
         session.rollback()
         raise HTTPException(status_code=400, detail="Invalid model")
+    
+@router.get("/mock")
+def mock_transactions(request: Request, session: SessionDep, count: int = Query(default=200, ge=1, le=5000)):
+    DEVICES = ["Phone", "Tablet", "Desktop", "Unknown"]
+    MERCHANTS = [
+        "Amazon", "Walmart", "Target", "BestBuy", "Starbucks",
+        "McDonalds", "Uber", "Netflix", "Spotify", "Steam"
+    ]
+    # Replace with your actual Category enum values from models.py
+    CATEGORIES = list(Category)
+    GENDERS = list(Gender)
+    MODELS = ["log","gb"]
+
+    def random_dob() -> date:
+        # Age range: 18–70 years old
+        days_ago = random.randint(18 * 365, 70 * 365)
+        return (datetime.now(timezone.utc) - timedelta(days=days_ago)).date()
+
+    def random_time() -> datetime:
+        # Transactions spread across the last 90 days
+        seconds_ago = random.randint(0, 90 * 24 * 3600)
+        return datetime.now(timezone.utc) - timedelta(seconds=seconds_ago)
+
+    created = 0
+    errors = 0
+
+    for _ in range(count):
+        txn = TransactionInput(
+            amount=round(random.uniform(100, 10000), 2),
+            time=random_time(),
+            category=random.choice(CATEGORIES),
+            device_name=random.choice(DEVICES),
+            merchant_name=random.choice(MERCHANTS),
+            customer_id=random.randint(1, 10),
+            customer_dob=random_dob(),
+            customer_gender=random.choice(GENDERS),
+            model_key=random.choice(MODELS)
+        )
+        try:
+            create_transaction(txn_data=txn, request=request, session=session)
+            created += 1
+        except HTTPException:
+            errors += 1
+            continue
+
+    return {"created": created, "errors": errors, "total": count}
+        
+
+
 
     
     
