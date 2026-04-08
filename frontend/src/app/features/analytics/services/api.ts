@@ -15,3 +15,11 @@ export const apiConfidenceOverTime = async (): Promise<{ x: any, y: any }[]> => 
 export const apiConfidenceOverRisk = async (): Promise<{ x: any, y: any }[]> => {
     return await fetchHelper<{ x: any, y: any }[]>('/graphs/conf-over-risk');
 }
+
+
+// This is a temporary endpoint to get the top 100 transactions for the last 24 hours, sorted by risk score. We will need to implement pagination and filtering in the future.
+import type { TransactionPublic } from "../../dashboard/services/api";
+
+export const apiGetAllTransactionsForFilter = async (): Promise<TransactionPublic[]> => {
+    return await fetchHelper<TransactionPublic[]>('/transactions/?page=1&limit=100');
+};

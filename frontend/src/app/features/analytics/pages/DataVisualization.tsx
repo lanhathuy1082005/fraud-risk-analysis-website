@@ -1,11 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   LineChart, Line, AreaChart, Area, ScatterChart, Scatter,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine
 } from 'recharts';
 import { TrendingUp, Activity} from 'lucide-react';
-import { apigetVisualizationStats, apiConfidenceOverRisk, apiConfidenceOverTime, apiRiskOverTime } from '../services/api';
+import { apigetVisualizationStats, apiConfidenceOverRisk, apiConfidenceOverTime, apiRiskOverTime, apiGetAllTransactionsForFilter } from '../services/api';
+import type { TransactionPublic } from "../../dashboard/services/api";
 
 export default function DataVisualization() {
   const [stats, setStats] = useState<{ avgRisk: number, avgConfidence: number }>(
@@ -21,15 +22,22 @@ export default function DataVisualization() {
   new Date(val).toLocaleDateString([], { month: 'short', day: 'numeric' }) + 
   ' ' + 
   new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const [allTransactions, setAllTransactions] = useState<TransactionPublic[]>([]);
+  const [selectedCustomer, setSelectedCustomer] = useState<string>('');
 
+  const customerIds = useMemo(
+    () => [...new Set(allTransactions.map((t) => String(t.id)))].sort((a, b) => Number(a) - Number(b)),
+    [allTransactions]
+  );
 
   useEffect(() => {
     const fetchPageData = async () => {
-      const [statsData, riskData, confidenceData, confidenceRiskData] = await Promise.all([
+      const [statsData, riskData, confidenceData, confidenceRiskData, txnData] = await Promise.all([
         apigetVisualizationStats(),
         apiRiskOverTime(),
         apiConfidenceOverTime(),
-        apiConfidenceOverRisk()
+        apiConfidenceOverRisk(),
+        apiGetAllTransactionsForFilter()
       ]);
 
       setStats({
@@ -39,10 +47,50 @@ export default function DataVisualization() {
       setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
       setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
       setConfidenceOverRisk(confidenceRiskData.map((d: { x: any, y: any }) => ({ x: d.x * 100, y: d.y * 100 })));
+      setAllTransactions(txnData);
     };
 
     fetchPageData();
   }, []);
+
+// Derive filtered chart data from the selected customer's transactions
+  const filteredRiskOverTime = useMemo(() => {
+    if (!selectedCustomer) return riskOverTime;
+    const times = new Set(
+      allTransactions
+        .filter((t) => String(t.id) === selectedCustomer)
+        .map((t) => t.time)
+    );
+    return riskOverTime.filter((d) => times.has(d.x));
+  }, [selectedCustomer, riskOverTime, allTransactions]);
+
+  const filteredConfidenceOverTime = useMemo(() => {
+    if (!selectedCustomer) return confidenceOverTime;
+    const customerTxns = allTransactions.filter(
+      (t) => String(t.id) === selectedCustomer
+    );
+    return customerTxns.map((t) => ({
+      x: t.time,
+      y: t.confidence_score * 100,
+    }));
+  }, [selectedCustomer, confidenceOverTime, allTransactions]);
+
+  const filteredConfidenceOverRisk = useMemo(() => {
+    if (!selectedCustomer) return confidenceOverRisk;
+    const customerTxns = allTransactions.filter(
+      (t) => String(t.id) === selectedCustomer
+    );
+    return customerTxns.map((t) => ({
+      x: t.risk_score * 100,
+      y: t.confidence_score * 100,
+    }));
+  }, [selectedCustomer, confidenceOverRisk, allTransactions]);
+
+  const hasData =
+    !selectedCustomer ||
+    filteredRiskOverTime.length > 0 ||
+    filteredConfidenceOverTime.length > 0 ||
+    filteredConfidenceOverRisk.length > 0;
 
   return (
     <div className="space-y-6">
@@ -54,6 +102,26 @@ export default function DataVisualization() {
             Analytics and visualization of model predictions: risk scores and confidence levels
           </p>
         </div>
+      </div>
+
+      {/* Customer Filter */}
+      <div className="flex items-center gap-4">
+        <label htmlFor="customer" className="text-xs font-medium text-gray-700">
+          Select Customer
+        </label>
+        <select
+          id="customer-filter"
+          value={selectedCustomer}
+          onChange={(e) => setSelectedCustomer(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+        >
+          <option value="">All Customers</option>
+          {customerIds.map((id) => (
+            <option key={id} value={id}>
+              Customer {id}
+            </option>
+          ))}
+        </select>
       </div>
 
       {/* KPI Row */}
@@ -74,6 +142,13 @@ export default function DataVisualization() {
         </div>
       </div>
 
+      {/* Empty state when customer has no data */}
+      {selectedCustomer && !hasData && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+          <p className="text-sm text-yellow-700">No data available for the selected customer.</p>
+        </div>
+      )}
+
       {/* Charts Row 1 */}
       <div className="grid grid-cols-2 gap-6">
         {/* Chart 1: Risk Over Time */}
@@ -85,7 +160,7 @@ export default function DataVisualization() {
             Track fraud risk trends to detect spikes and systematic changes
           </p>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={riskOverTime}>
+            <LineChart data={filteredRiskOverTime}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
               <XAxis 
                 dataKey="x" 
@@ -127,7 +202,7 @@ export default function DataVisualization() {
             Feature-level contributions to overall model confidence
           </p>
           <ResponsiveContainer width="100%" height={300}>
-            <AreaChart data={confidenceOverTime}>
+            <AreaChart data={filteredConfidenceOverTime}>
               <defs>
                 <linearGradient id="ipGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.7} />
@@ -227,7 +302,7 @@ export default function DataVisualization() {
                 <ReferenceLine x={70} stroke="#9ca3af" strokeDasharray="3 3" />
                 <ReferenceLine y={50} stroke="#9ca3af" strokeDasharray="3 3" />
                 <ReferenceLine y={70} stroke="#9ca3af" strokeDasharray="3 3" />
-                <Scatter name="Transactions" data={confidenceOverRisk} fill="#8b5cf6" opacity={0.6} />
+                <Scatter name="Transactions" data={filteredConfidenceOverRisk} fill="#8b5cf6" opacity={0.6} />
             </ScatterChart>
           </ResponsiveContainer>
         </div>
