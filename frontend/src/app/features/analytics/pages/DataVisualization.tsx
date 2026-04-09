@@ -105,7 +105,7 @@ export default function DataVisualization() {
       </div>
 
       {/* Customer Filter */}
-      <div className="flex items-center gap-4">
+      <div className="flex flex-wrap items-center gap-3">
         <label htmlFor="customer" className="text-xs font-medium text-gray-700">
           Select Customer
         </label>
@@ -113,7 +113,7 @@ export default function DataVisualization() {
           id="customer-filter"
           value={selectedCustomer}
           onChange={(e) => setSelectedCustomer(e.target.value)}
-          className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[180px]"
+          className="flex-1 min-w-[180px] max-w-xs border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Customers</option>
           {customerIds.map((id) => (
@@ -125,7 +125,7 @@ export default function DataVisualization() {
       </div>
 
       {/* KPI Row */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-3">
             <TrendingUp className="w-5 h-5 text-red-600" />
@@ -150,7 +150,7 @@ export default function DataVisualization() {
       )}
 
       {/* Charts Row 1 */}
-      <div className="grid grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Risk Over Time */}
         <div className="bg-white border border-gray-200 rounded-lg p-6">
           <div className="flex items-start justify-between mb-1">
@@ -194,7 +194,7 @@ export default function DataVisualization() {
         </div>
 
         {/* Chart 2: Confidence Over Time */}
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
           <div className="flex items-start justify-between mb-1">
             <h2 className="text-lg font-semibold text-gray-900">Confidence Over Time</h2>
           </div>
@@ -238,14 +238,14 @@ export default function DataVisualization() {
           </ResponsiveContainer>
         </div>
             {/* Chart 3: Joint Risk Scatter (Full Width) */}
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6">
             <h2 className="text-lg font-semibold text-gray-900 mb-1">Joint Risk × Confidence Analysis</h2>
             <p className="text-sm text-gray-600 mb-4">
               Decision support quadrants: separate fraud likelihood from model certainty
             </p>
 
             {/* Quadrant Legend */}
-            <div className="grid grid-cols-4 gap-3 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-xs font-medium text-red-900">High Risk + High Confidence</p>
                 <p className="text-xs text-red-700 mt-1">→ Auto escalate</p>

@@ -161,14 +161,14 @@ export default function TransactionAnalysis() {
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Input Form */}
-        <div className="col-span-2">
-          <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-5">
+        <div className="lg:col-span-2">
+          <div className="bg-white border border-gray-200 rounded-lg p-4 sm:p-6 space-y-5">
             <h2 className="text-lg font-semibold text-gray-900">Transaction Details</h2>
 
             {/* Row 1 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <User className="w-4 h-4 inline mr-2" />
@@ -198,7 +198,7 @@ export default function TransactionAnalysis() {
             </div>
 
             {/* Row 2 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Store className="w-4 h-4 inline mr-2" />
@@ -227,7 +227,7 @@ export default function TransactionAnalysis() {
             </div>
 
             {/* Row 3 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Users className="w-4 h-4 inline mr-2" />
@@ -257,7 +257,7 @@ export default function TransactionAnalysis() {
             </div>
 
             {/* Row 4 */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Tag className="w-4 h-4 inline mr-2" />
@@ -294,7 +294,7 @@ export default function TransactionAnalysis() {
                 <Cpu className="w-4 h-4 inline mr-2" />
                 ML Model
               </label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {MODELS.map(m => (
                   <button
                     key={m.value}
@@ -312,7 +312,7 @@ export default function TransactionAnalysis() {
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-wrap gap-3 pt-4">
               <button
                 onClick={handleCreate}
                 disabled={!isFormValid}

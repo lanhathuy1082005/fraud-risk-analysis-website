@@ -69,7 +69,7 @@ export default function Dashboard() {
 
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <KPICard
           title="Average Transaction Amount Today"
           value={dashboardStats.avgAmount.toFixed(2)}
