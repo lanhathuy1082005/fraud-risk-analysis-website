@@ -1,5 +1,4 @@
 import { TransactionPublic } from '../services/api';
-import { CompositeRiskBar } from './CompositeRiskBar';
 
 interface TransactionTableProps {
   transactions: TransactionPublic[];
@@ -31,9 +30,6 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                 Confidence
-              </th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Fraud Score
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                 Status
@@ -68,13 +64,6 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                   }`}>
                     {transaction.confidence_score * 100}%
                   </span>
-                </td>
-                <td className="px-4 py-4" style={{ minWidth: '180px' }}>
-                  <CompositeRiskBar 
-                    riskScore={transaction.risk_score} 
-                    confidenceScore={transaction.confidence_score}  
-                    size="small"
-                  />
                 </td>
                 { transaction.transaction_status && (
                 <td className="px-4 py-4 whitespace-nowrap">
