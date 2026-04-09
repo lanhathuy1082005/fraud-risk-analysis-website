@@ -15,6 +15,7 @@ export interface TransactionPublic {
   merchant_name: string;
   risk_score:    number;
   confidence_score:    number;
+  device_type:         string;
   transaction_status:        string| null;
 }
 

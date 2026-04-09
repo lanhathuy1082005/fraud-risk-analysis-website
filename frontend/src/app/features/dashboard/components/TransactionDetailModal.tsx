@@ -37,8 +37,12 @@ export function TransactionDetailModal({
           {/* Transaction Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
-              <label className="text-sm text-gray-600">Transaction ID</label>
+              <label className="text-sm text-gray-600">Customer ID</label>
               <p className="text-base font-medium text-gray-900 mt-1">{transaction.id}</p>
+            </div>
+            <div>
+              <label className="text-sm text-gray-600">Transaction ID</label>
+              <p className="text-base font-medium text-gray-900 mt-1">{transaction.uuid}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600">Amount</label>
@@ -52,7 +56,16 @@ export function TransactionDetailModal({
                 {transaction.time.toLocaleString()}
               </p>
             </div>
+            <div>
+              <label className="text-sm text-gray-600">Category</label>
+              <p className="text-base font-medium text-gray-900 mt-1">{transaction.category}</p>
+            </div>
+            <div>
+              <label className="text-sm text-gray-600">Device Type</label>
+              <p className="text-base font-medium text-gray-900 mt-1">{transaction.device_type}</p>
+            </div>
           </div>
+            
 
         {/* Actions */}
         <div className="flex flex-wrap items-center justify-end gap-3 pt-4 border-t border-gray-200 bg-gray-50 -mx-4 sm:-mx-6 px-4 sm:px-6 py-4 rounded-b-lg">

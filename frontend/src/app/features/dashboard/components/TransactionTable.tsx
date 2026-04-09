@@ -20,6 +20,9 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
           <thead className="bg-gray-50 border-b border-gray-200">
             <tr>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Customer ID
+              </th>
+              <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                 Transaction ID
               </th>
               <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
@@ -44,7 +47,10 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 className="hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="text-sm font-medium text-gray-900">{transaction.id}</span>
+                  <span className="text-sm text-gray-900">{transaction.id}</span>
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  <span className="text-sm font-medium text-gray-900">{transaction.uuid}</span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">${transaction.amount.toLocaleString()}</span>
