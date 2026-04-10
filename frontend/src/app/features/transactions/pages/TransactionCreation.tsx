@@ -272,8 +272,12 @@ export default function TransactionAnalysis() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Actions
               </label>
-              <button
-                className="px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition text-sm"
+              <button className='px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition'
+                style={{
+                  padding: "10px 16px",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                }}
               >
                 Generate Mock Data
               </button>
