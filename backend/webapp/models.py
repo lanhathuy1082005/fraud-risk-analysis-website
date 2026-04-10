@@ -117,13 +117,9 @@ class DeviceInput(SQLModel):
 class Review(SQLModel, table=True):
     __tablename__ = "reviews"
     id: int | None = Field(default=None, primary_key=True)
-    status: Status 
-    user_uuid: UUID = Field(foreign_key="users.uuid", index=True)
+    status: Status | None = None
+    user_uuid: UUID | None = Field(default=None, foreign_key="users.uuid", index=True)
     reviewed_at: datetime = Field(default_factory=get_current_time, sa_column=Column(DateTime(timezone=True)))
-
-class ReviewInput(SQLModel):
-    status: Status 
-    transaction_id: int
 
 """transactions"""
 class TransactionBase(SQLModel):
@@ -160,6 +156,7 @@ class TransactionPublic(TransactionBase):
     uuid: UUID
     merchant_name: str  
     customer_id: int
+    review_id: int | None = None
     device_type: str
     transaction_status: Status | None = None 
     risk_score: float 

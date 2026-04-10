@@ -1,3 +1,4 @@
+import React from 'react';
 import { X, CheckCircle, Ban } from 'lucide-react';
 import { TransactionPublic } from '../services/api';
 import { apiReviewTransaction } from '../services/api';
@@ -13,8 +14,28 @@ export function TransactionDetailModal({
   onClose,
   fetchData,
 }: TransactionDetailModalProps) {
+  // DEBUG logging
+  React.useEffect(() => {
+    console.log('Modal received transaction:', transaction);
+    if (transaction) {
+      console.log('Transaction review_id:', transaction.review_id);
+    }
+  }, [transaction]);
+
   const onReview = async (status: 'approved' | 'blocked') => {
-    await apiReviewTransaction({ transaction_id: transaction!.id, status: status });
+    try {
+      if (!transaction!.review_id) {
+        console.error('No review_id available for this transaction');
+        alert('Cannot review transaction: missing review_id');
+        return;
+      }
+      await apiReviewTransaction(transaction!.review_id, status);
+      await fetchData();
+      onClose();
+    } catch (error) {
+      console.error('Review submission failed:', error);
+      alert('Failed to submit review. Please try again.');
+    }
   }
   if (!transaction) return null;
 
@@ -76,22 +97,14 @@ const formatCategory = (category: string) => category.startsWith('es_') ? catego
           {!transaction.transaction_status && (
           <>
           <button
-            onClick={async () => {
-              await onReview('approved');
-              await fetchData();
-              onClose();
-            }}
+            onClick={() => onReview('approved')}
             className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
           >
             <CheckCircle className="w-4 h-4" />
             Approve
           </button>
           <button
-            onClick={async () => {
-              await onReview('blocked');
-              await fetchData();
-              onClose();
-            }}
+            onClick={() => onReview('blocked')}
             className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
           >
             <Ban className="w-4 h-4" />

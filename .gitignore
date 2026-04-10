@@ -140,3 +140,4 @@ dist
 .venv
 __pycache__/
 *.pyc   
+VERIFICATION_ANALYSIS.md

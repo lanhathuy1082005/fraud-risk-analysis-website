@@ -12,6 +12,7 @@ export interface TransactionPublic {
   time:          string;
   category:      string;
   customer_id: number | null;
+  review_id: number | null;
   merchant_name: string;
   risk_score:    number;
   confidence_score:    number;
@@ -41,6 +42,8 @@ export interface TransactionPage {
 
 export async function apiGetTransactions(page = 1, limit = 10): Promise<TransactionPage> {
   const response = await fetchHelper<TransactionPublic[]>(`/transactions/?page=${page}&limit=${limit + 1}`, {}, true);
+  console.log('Raw API Response:', response); // DEBUG
+  console.log('First transaction:', response[0]); // DEBUG - check review_id
   const hasNextPage = response.length > limit;
   return {
     transactions: response.slice(0, limit),
@@ -49,14 +52,14 @@ export async function apiGetTransactions(page = 1, limit = 10): Promise<Transact
 }
 
 /**
- * POST /reviews
+ * POST /review/{review_id}
  * Submit a review for a transaction (approve/reject).
- * Payload: { transaction_uuid: string, decision: 'approved' | 'blocked' }
+ * Payload: { status: 'approved' | 'blocked' }
  */
-export async function apiReviewTransaction(payload: { transaction_id: number| null, status: 'approved' | 'blocked' }): Promise<void> {
-  await fetchHelper<void>(`/review`, {
+export async function apiReviewTransaction(reviewId: number, status: 'approved' | 'blocked'): Promise<void> {
+  await fetchHelper<void>(`/review/${reviewId}`, {
     method: 'POST',
-    body: JSON.stringify(payload),
+    body: JSON.stringify({ status }),
   }, true);
 }
 

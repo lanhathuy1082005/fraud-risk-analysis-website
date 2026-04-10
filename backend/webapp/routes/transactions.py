@@ -5,7 +5,7 @@ from core.config import settings
 from sqlmodel import select
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import IntegrityError
-from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput, Category, Gender
+from models import Transaction, TransactionInput, TransactionPublic, TransactionSummary, CustomerInput, DeviceInput, MerchantInput, Category, Gender, Review
 from services.ml_pipeline import get_conf_score, get_risk_score
 from services.transactions import upsert_customer,upsert_device,upsert_merchant, upsert_customer_category, upsert_customer_device
 from utils.statistics import get_last_5_txn, get_recent_txn_count
@@ -31,12 +31,23 @@ def get_transactions(  session: SessionDep , page : int = Query(default=1, ge=1)
         amount=t.amount, time=t.time, category=t.category,
         id=t.id, uuid=t.uuid, customer_id=t.customer.id, 
         merchant_name=t.merchant.name, device_type=t.device.name,
+        review_id=t.review_id,
         transaction_status=t.review.status if t.review else None,
         risk_score=t.risk_score, confidence_score=t.confidence_score
     )
     for t in transactions]
 
     return result
+
+def get_txn_status(risk: float, conf: float):
+    if risk > 0.85 and conf > 0.85:
+        return 'approved' 
+    
+    if risk < 0.4 and conf < 0.4:
+        return 'blocked'
+    
+    return None
+
 
 @router.post("/")
 def create_transaction( txn_data: TransactionInput, request: Request, session: SessionDep):
@@ -89,16 +100,27 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
                                     c_d_data=c_d_data,
                                     c_c_data=c_c_data)
         
+        txn_status = get_txn_status(risk=risk_score,conf=confidence_score)
+
+        auto_review = Review(status=txn_status)
+
+        session.add(auto_review)
+        session.flush()
+        session.refresh(auto_review)
+            
         new_transaction = Transaction(amount=txn_data.amount,
                                     time=txn_data.time,
                                     category=txn_data.category,
                                     merchant_id=merchant.id,
                                     customer_id=customer.id,
+                                    review_id= auto_review.id,
                                     device_id=device.id,
                                     risk_score=risk_score,
                                     confidence_score=confidence_score)
+        
         session.add(new_transaction)
         session.commit()
+
         return {"msg":"transaction_created"}
     except IntegrityError as e:
         session.rollback()
@@ -113,7 +135,7 @@ def create_transaction( txn_data: TransactionInput, request: Request, session: S
         raise HTTPException(status_code=400, detail="Invalid model")
     
 @router.get("/mock")
-def mock_transactions(request: Request, session: SessionDep, count: int = Query(default=200, ge=1, le=5000)):
+def mock_transactions(request: Request, session: SessionDep, count: int = Query(default=100, ge=1, le=5000)):
     DEVICES = ["Phone", "Tablet", "Desktop", "Unknown"]
     MERCHANTS = [
         "Amazon", "Walmart", "Target", "BestBuy", "Starbucks",
@@ -139,7 +161,7 @@ def mock_transactions(request: Request, session: SessionDep, count: int = Query(
 
     for _ in range(count):
         txn = TransactionInput(
-            amount=round(random.uniform(100, 10000), 2),
+            amount=round(random.uniform(100, 2000), 2),
             time=random_time(),
             category=random.choice(CATEGORIES),
             device_name=random.choice(DEVICES),
