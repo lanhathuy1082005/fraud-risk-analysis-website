@@ -40,11 +40,7 @@ const formatCategory = (category: string) => category.startsWith('es_') ? catego
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <div>
               <label className="text-sm text-gray-600">Customer ID</label>
-              <p className="text-base font-medium text-gray-900 mt-1">{transaction.id}</p>
-            </div>
-            <div>
-              <label className="text-sm text-gray-600">Transaction ID</label>
-              <p className="text-base font-medium text-gray-900 mt-1">{transaction.uuid}</p>
+              <p className="text-base font-medium text-gray-900 mt-1">{transaction.customer_id}</p>
             </div>
             <div>
               <label className="text-sm text-gray-600">Amount</label>

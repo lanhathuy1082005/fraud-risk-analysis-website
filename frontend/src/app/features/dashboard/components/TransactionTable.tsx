@@ -47,7 +47,7 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
                 className="hover:bg-gray-50 cursor-pointer transition-colors"
               >
                 <td className="px-4 py-4 whitespace-nowrap">
-                  <span className="text-sm text-gray-900">{transaction.id}</span>
+                  <span className="text-sm text-gray-900">{transaction.customer_id}</span>
                 </td>
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className="text-sm font-medium text-gray-900">{transaction.uuid}</span>
