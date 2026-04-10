@@ -44,8 +44,8 @@ export default function DataVisualization() {
         avgRisk: statsData.avg_risk_score_24h*100,
         avgConfidence: statsData.avg_conf_score_24h*100
       });
-      setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
-      setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })));
+      setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).slice().reverse());
+      setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).slice().reverse());
       setConfidenceOverRisk(confidenceRiskData.map((d: { x: any, y: any }) => ({ x: d.x * 100, y: d.y * 100 })));
       setAllTransactions(txnData);
     };
@@ -165,9 +165,10 @@ export default function DataVisualization() {
               <XAxis 
                 dataKey="x" 
                 tickFormatter={formatDateTime}
-                tick={{ fontSize: 11 }} 
+                tick={selectedCustomer ? { fontSize: 11 } : false} 
                 stroke="#6b7280" 
-                interval={4} />
+                interval={4}
+                hide={!selectedCustomer} />
               <YAxis
                 domain={[0, 100]}
                 tick={{ fontSize: 12 }}
@@ -213,9 +214,10 @@ export default function DataVisualization() {
               <XAxis 
                 dataKey="x" 
                 tickFormatter={formatDateTime}
-                tick={{ fontSize: 11 }} 
+                tick={selectedCustomer ? { fontSize: 11 } : false}
                 stroke="#6b7280" 
-                interval={4} />
+                interval={4}
+                hide={!selectedCustomer} />
               <YAxis
                 domain={[0, 100]}
                 tick={{ fontSize: 12 }}
@@ -254,13 +256,13 @@ export default function DataVisualization() {
                 <p className="text-xs font-medium text-orange-900">High Risk + Low Confidence</p>
                 <p className="text-xs text-orange-700 mt-1">→ Manual review</p>
               </div>
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <p className="text-xs font-medium text-green-900">Low Risk + High Confidence</p>
-                <p className="text-xs text-green-700 mt-1">→ Safe</p>
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                <p className="text-xs font-medium text-orange-900">Low Risk + High Confidence</p>
+                <p className="text-xs text-orange-700 mt-1">→ Manual review</p>
               </div>
-              <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                <p className="text-xs font-medium text-gray-900">Low Risk + Low Confidence</p>
-                <p className="text-xs text-gray-700 mt-1">→ Monitor</p>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-xs font-medium text-green-900">Low Risk + Low Confidence</p>
+                <p className="text-xs text-green-700 mt-1">→ Safe</p>
               </div>
             </div>
 

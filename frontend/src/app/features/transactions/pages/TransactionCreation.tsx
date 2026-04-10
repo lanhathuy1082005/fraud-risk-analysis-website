@@ -9,7 +9,6 @@ import {
   Users,
   Tag,
   Monitor,
-  Cpu,
   Zap,
 } from 'lucide-react';
 import { apiCreateTransaction, apiMockTransactions } from '../services/api';
@@ -50,7 +49,6 @@ interface TransactionFormData {
   DoB:        string;
   category:        Category;
   deviceName:      string;
-  model:            string;
 }
 
 const emptyForm = (): TransactionFormData => ({
@@ -62,7 +60,6 @@ const emptyForm = (): TransactionFormData => ({
   DoB:'',
   category: Category.contents,
   deviceName:      '',
-  model:           '',
 });
 
 // ─── constants ────────────────────────────────────────────────────────────────
@@ -90,10 +87,6 @@ const CATEGORIES  = [
   { label: "Wellness and Beauty", value: "es_wellnessandbeauty" }
 ] as const;
 const DEVICE_TYPES = ['Mobile', 'Desktop', 'Tablet', 'Unknown'] as const;
-const MODELS      = [
-  { label: "Model LOG", value: "log" },
-  { label: "Model GB", value: "gb" }
-] as const;
 
 // ─── component ───────────────────────────────────────────────────────────────
 
@@ -115,7 +108,7 @@ export default function TransactionAnalysis() {
       device_name: form.deviceName,
       customer_dob: form.DoB,
       customer_gender: form.customerGender,
-      model_key: form.model
+      model_key: 'log'
     };
      await apiCreateTransaction(response);
     navigate('/dashboard');
@@ -126,26 +119,12 @@ export default function TransactionAnalysis() {
     navigate('/dashboard');
   }
 
-  const handleReset = () => {
-    setForm(emptyForm());
-  };
-
   const isFormValid = form.customerId && form.amount && form.merchantName && 
                       form.transactionTime && form.customerGender && form.DoB && 
                       form.category && form.deviceName;
 
   return (
     <div className="space-y-6">
-      <button className='px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition'
-        style={{
-          padding: "10px 16px",
-          fontSize: "14px",
-          cursor: "pointer",
-        }}
-        onClick={handleMockData}
-      >
-        Generate Mock Data
-      </button>
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
@@ -288,27 +267,16 @@ export default function TransactionAnalysis() {
               </div>
             </div>
 
-            {/* Model Selection */}
+            {/* Generate Mock Data */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                <Cpu className="w-4 h-4 inline mr-2" />
-                ML Model
+                Actions
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {MODELS.map(m => (
-                  <button
-                    key={m.value}
-                    onClick={() => handleChange('model', m.value)}
-                    className={`p-3 rounded-lg border-2 transition-all ${
-                      form.model === m.value
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="text-sm font-medium">{m.label}</div>
-                  </button>
-                ))}
-              </div>
+              <button
+                className="px-4 py-2 border-2 border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition text-sm"
+              >
+                Generate Mock Data
+              </button>
             </div>
 
             {/* Buttons */}
@@ -320,12 +288,6 @@ export default function TransactionAnalysis() {
               >
                 <Zap className="w-4 h-4" />
                 Create Transaction
-              </button>
-              <button
-                onClick={handleReset}
-                className="px-6 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 rounded-lg transition-colors"
-              >
-                Reset
               </button>
             </div>
           </div>
