@@ -16,7 +16,7 @@ export interface TransactionCreatePayload {
 export async function apiCreateTransaction(
   payload: TransactionCreatePayload,
 ): Promise<string> {
-  return await fetchHelper<string>('/transactions', {
+  return await fetchHelper<string>('/transactions/', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

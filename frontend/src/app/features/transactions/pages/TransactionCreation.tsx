@@ -95,24 +95,33 @@ export default function TransactionAnalysis() {
   const [form, setForm] = useState<TransactionFormData>(emptyForm());
 
   const handleChange = (field: keyof TransactionFormData, value: string) => {
-    setForm(prev => ({ ...prev, [field]: value }));
+    setForm(prev => ({ ...prev,
+    [field]: field === 'customerId' ? (value === '' ? null : Number(value)) : value,
+    }));
   };
 
   const handleCreate = async () => {
+  try {
     const response = {
       amount: parseFloat(form.amount),
-      time: new Date(form.transactionTime).toISOString(),
+      time: form.transactionTime
+        ? new Date(form.transactionTime).toISOString()
+        : new Date().toISOString(),
       category: form.category,
       merchant_name: form.merchantName,
-      customer_id: form.customerId,
+      customer_id: Number(form.customerId),
       device_name: form.deviceName,
       customer_dob: form.DoB,
       customer_gender: form.customerGender,
       model_key: 'log'
     };
-     await apiCreateTransaction(response);
-    navigate('/dashboard');
-  };
+    await apiCreateTransaction(response);
+  } catch (e) {
+    console.error('Create transaction error:', e);
+  } finally {
+    navigate('/dashboard', { state: { newCustomerId: Number(form.customerId) } });
+  }
+};
 
   const handleMockData = async () => {
     await apiMockTransactions();

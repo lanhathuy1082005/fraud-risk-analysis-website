@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 import { TransactionPublic } from '../services/api';
 import { KPICard } from '../components/KPICard';
 import { TransactionTable } from '../components/TransactionTable';
@@ -20,6 +21,7 @@ export default function Dashboard() {
   )
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
+  const location = useLocation();
   const pageSize = 5;
 
   const fetchData = async () => {
@@ -55,7 +57,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [location]);
 
   return (
     <div className="space-y-6">
