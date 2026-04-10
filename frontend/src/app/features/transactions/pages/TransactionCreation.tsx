@@ -119,7 +119,7 @@ export default function TransactionAnalysis() {
   } catch (e) {
     console.error('Create transaction error:', e);
   } finally {
-    navigate('/dashboard', { state: { newCustomerId: Number(form.customerId) } });
+    navigate('/dashboard', { state: { newCustomerId: Number(form.customerId), highlightNew: true } });
   }
 };
 

@@ -3,9 +3,10 @@ import { TransactionPublic } from '../services/api';
 interface TransactionTableProps {
   transactions: TransactionPublic[];
   onSelectTransaction: (transaction: TransactionPublic) => void;
+  highlightedUuid?: string | null;
 }
 
-export function TransactionTable({ transactions, onSelectTransaction }: TransactionTableProps) {
+export function TransactionTable({ transactions, onSelectTransaction, highlightedUuid }: TransactionTableProps) {
   const getStatusColor = (status: string | null) => {
     switch (status) {
       case 'blocked': return 'bg-red-100 text-red-800';
@@ -44,7 +45,11 @@ export function TransactionTable({ transactions, onSelectTransaction }: Transact
               <tr
                 key={transaction.id}
                 onClick={() => onSelectTransaction(transaction)}
-                className="hover:bg-gray-50 cursor-pointer transition-colors"
+                className={`cursor-pointer transition-all duration-700 ${
+                  transaction.uuid === highlightedUuid
+                  ? 'bg-blue-50 border-l-4 border-blue-500 shadow-sm'
+                  : 'hover:bg-gray-50'
+                 }`}
               >
                 <td className="px-4 py-4 whitespace-nowrap">
                   <span className="text-sm text-gray-900">{transaction.customer_id}</span>

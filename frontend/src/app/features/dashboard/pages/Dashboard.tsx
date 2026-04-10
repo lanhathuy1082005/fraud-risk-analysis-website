@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router';
 import { TransactionPublic } from '../services/api';
 import { KPICard } from '../components/KPICard';
@@ -23,6 +23,8 @@ export default function Dashboard() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const location = useLocation();
   const pageSize = 5;
+  const [highlightedUuid, setHighlightedUuid] = useState<string | null>(null);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchData = async () => {
     const [stats, pageData] = await Promise.all([
@@ -56,7 +58,36 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+  if (location.state?.highlightNew) {
+    const highlightFetch = async () => {
+      setCurrentPage(1);
+      const [stats, pageData] = await Promise.all([
+        apiGetDashboardStats(),
+        apiGetTransactions(1, pageSize),
+      ]);
+      setDashboardStats({
+        avgAmount: stats.avg_amount_24h,
+        transactionCount: stats.txn_count_24h,
+        highConfAndhighRisk: stats.high_conf_high_risk_txn_count,
+      });
+      setTransactions(pageData.transactions);
+      setHasNextPage(pageData.hasNextPage);
+      if (pageData.transactions.length > 0) {
+        const newestUuid = pageData.transactions[0].uuid;
+        setHighlightedUuid(newestUuid);
+        if (highlightTimer.current) clearTimeout(highlightTimer.current);
+        highlightTimer.current = setTimeout(() => {
+          setHighlightedUuid(null);
+        }, 50000);
+      }
+    };
+    highlightFetch();
+  } else {
     fetchData();
+  }
+  return () => {
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+  };
   }, [location]);
 
   return (
@@ -95,6 +126,7 @@ export default function Dashboard() {
         <TransactionTable
           transactions={transactions}
           onSelectTransaction={setSelectedTransaction}
+          highlightedUuid={highlightedUuid}
         />
 
         <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
