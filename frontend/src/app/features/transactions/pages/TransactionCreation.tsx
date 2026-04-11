@@ -117,7 +117,8 @@ export default function TransactionAnalysis() {
     };
     await apiCreateTransaction(response);
   } catch (e) {
-    console.error('Create transaction error:', e);
+    console.error('Create transaction error:', e);  
+    alert(`Failed to create transaction: ${String(e)}`);
   } finally {
     navigate('/dashboard', { state: { newCustomerId: Number(form.customerId), highlightNew: true } });
   }
@@ -190,7 +191,7 @@ export default function TransactionAnalysis() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Store className="w-4 h-4 inline mr-2" />
-                  Merchant ID
+                  Merchant Name
                 </label>
                 <input
                   type="text"
