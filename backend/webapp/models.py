@@ -121,6 +121,9 @@ class Review(SQLModel, table=True):
     user_uuid: UUID | None = Field(default=None, foreign_key="users.uuid", index=True)
     reviewed_at: datetime = Field(default_factory=get_current_time, sa_column=Column(DateTime(timezone=True)))
 
+class ReviewInput(SQLModel):
+    status: Status
+
 """transactions"""
 class TransactionBase(SQLModel):
     amount: float

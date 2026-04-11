@@ -1,5 +1,7 @@
 from contextlib import asynccontextmanager
-from db import create_db_and_tables
+from sqlmodel import Session, select
+from db import create_db_and_tables, engine
+from models import Customer
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import auth, transactions, reviews, graphs,stats
@@ -10,12 +12,18 @@ async def lifespan(app : FastAPI):
     create_db_and_tables()
     
         # Load the model
-    app.state.models = {"gb": load_model("gb_model"),
-                        "log": load_model("log_model")}
+    app.state.models = {"log": load_model("log_model")}
 
     # Load feature information
     app.state.feature_columns = load_features("feature_columns")
     app.state.constants = load_features("feature_engineering_constants")
+
+    with Session(engine) as session:
+        existing = session.exec(select(Customer)).all()
+        app.state.customers = {
+            c.id: {"dob": c.dob, "gender": c.gender}
+            for c in existing
+        }
     yield
 
 

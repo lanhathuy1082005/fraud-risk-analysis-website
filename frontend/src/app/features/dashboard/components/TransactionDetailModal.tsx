@@ -14,29 +14,18 @@ export function TransactionDetailModal({
   onClose,
   fetchData,
 }: TransactionDetailModalProps) {
-  // DEBUG logging
-  React.useEffect(() => {
-    console.log('Modal received transaction:', transaction);
-    if (transaction) {
-      console.log('Transaction review_id:', transaction.review_id);
-    }
-  }, [transaction]);
 
-  const onReview = async (status: 'approved' | 'blocked') => {
-    try {
-      if (!transaction!.review_id) {
-        console.error('No review_id available for this transaction');
-        alert('Cannot review transaction: missing review_id');
-        return;
-      }
-      await apiReviewTransaction(transaction!.review_id, status);
-      await fetchData();
-      onClose();
-    } catch (error) {
-      console.error('Review submission failed:', error);
-      alert('Failed to submit review. Please try again.');
-    }
+const onReview = async (status: 'approved' | 'blocked') => {
+  try {
+    await apiReviewTransaction(transaction!.id, status);
+    await fetchData();
+    onClose();
+  } catch (error) {
+    console.error('Review submission failed:', error);
+    alert('Failed to submit review. Please try again.');
   }
+}
+
   if (!transaction) return null;
 
 const formatCategory = (category: string) => category.startsWith('es_') ? category.slice(3) : category;

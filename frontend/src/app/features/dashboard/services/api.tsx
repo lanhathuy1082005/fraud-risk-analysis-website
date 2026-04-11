@@ -56,8 +56,8 @@ export async function apiGetTransactions(page = 1, limit = 10): Promise<Transact
  * Submit a review for a transaction (approve/reject).
  * Payload: { status: 'approved' | 'blocked' }
  */
-export async function apiReviewTransaction(reviewId: number, status: 'approved' | 'blocked'): Promise<void> {
-  await fetchHelper<void>(`/review/${reviewId}`, {
+export async function apiReviewTransaction(transactionId: number | null, status: 'approved' | 'blocked'): Promise<void> {
+  await fetchHelper<void>(`/review/${transactionId}`, {
     method: 'POST',
     body: JSON.stringify({ status }),
   }, true);

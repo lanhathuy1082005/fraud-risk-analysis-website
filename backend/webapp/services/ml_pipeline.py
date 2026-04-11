@@ -8,7 +8,7 @@ from utils.statistics import *
 def generate_data(app : FastAPI,  txn_data: TransactionInput, txn_summary: TransactionSummary):
 
     transaction_data = {
-        'step': [get_step(txn_data.time)],
+        'step': [get_step(txn_data.time) % 180],
         'amount': [txn_data.amount],
         'age': [get_age_category(txn_data.time,txn_data.customer_dob)],
         'gender': [f"'{txn_data.customer_gender.value}'"],
@@ -20,11 +20,11 @@ def generate_data(app : FastAPI,  txn_data: TransactionInput, txn_summary: Trans
 
     df_encoded['amount_log'] = np.log1p(df_encoded['amount'])
     df_encoded['transaction_count'] = txn_summary.txn_count
-    df_encoded['customer_avg_amount'] = txn_summary.avg_amount or app.state.constants['global_customer_avg_amount_fallback'] #not resolved
+    df_encoded['customer_avg_amount'] = txn_summary.avg_amount if txn_summary.avg_amount is not None else app.state.constants['global_customer_avg_amount_fallback'] #not resolved
     df_encoded['amount_deviation'] = df_encoded['amount'] - df_encoded['customer_avg_amount']
     df_encoded['rolling_mean_5'] = get_rolling_mean_5(txn_summary.last_5_txn)
     df_encoded['rolling_std_5'] = get_rolling_std_5(txn_summary.last_5_txn)
-    df_encoded['amount_zscore'] = np.where( df_encoded['rolling_std_5'] != 0, df_encoded['amount_deviation'] / df_encoded['rolling_std_5'], 0)
+    df_encoded['amount_zscore'] = np.where( df_encoded['rolling_std_5'] != 0, (df_encoded['amount'] - df_encoded['rolling_mean_5']) / df_encoded['rolling_std_5'], 0)
     df_encoded['new_merchant'] = int(txn_summary.txn_count == 1)
     df_encoded['merchant_freq'] = txn_summary.merchant_freq
     df_encoded['recent_txn_count'] = txn_summary.recent_txn_count
@@ -32,7 +32,7 @@ def generate_data(app : FastAPI,  txn_data: TransactionInput, txn_summary: Trans
 
     df_encoded = df_encoded.reindex(columns=app.state.feature_columns, fill_value=0)
     df_encoded = df_encoded.astype(float)
-
+    
     return df_encoded
 
 
@@ -41,6 +41,7 @@ def get_risk_score(app: FastAPI, txn_data: TransactionInput, txn_summary: Transa
     df = generate_data(app=app,txn_data=txn_data,txn_summary=txn_summary)
     chosen_model = app.state.models[txn_data.model_key]
 
+    
     risk_score = chosen_model.predict_proba(df)
 
     return round(float(risk_score[0][1]), 2)

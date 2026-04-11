@@ -58,7 +58,7 @@ def get_rolling_std_5(transaction_list: list[Transaction]):
     values = [t.amount for t in transaction_list]
     mean = sum(values) / len(values)
     
-    variance = sum((x - mean) ** 2 for x in values) / len(values)
+    variance = sum((x - mean) ** 2 for x in values) / (len(values) - 1) if len(values) > 1 else 0
     
     return math.sqrt(variance)
 
