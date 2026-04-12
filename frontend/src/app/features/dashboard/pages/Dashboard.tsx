@@ -22,7 +22,7 @@ export default function Dashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [hasNextPage, setHasNextPage] = useState(false);
   const location = useLocation();
-  const pageSize = 5;
+  const pageSize = 15;
   const [highlightedUuid, setHighlightedUuid] = useState<string | null>(null);
   const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
