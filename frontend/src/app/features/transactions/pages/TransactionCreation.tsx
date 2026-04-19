@@ -129,8 +129,7 @@ export default function TransactionAnalysis() {
     navigate('/dashboard');
   }
 
-  const isFormValid = form.customerId && form.amount && form.merchantName && 
-                      form.transactionTime && form.customerGender && form.DoB && 
+  const isFormValid = form.customerId && form.amount && form.merchantName && form.customerGender && form.DoB && 
                       form.category && form.deviceName;
 
   return (
@@ -204,7 +203,7 @@ export default function TransactionAnalysis() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   <Clock className="w-4 h-4 inline mr-2" />
-                  Transaction Time
+                  Transaction Time (default to today if leave empty)
                 </label>
                 <input
                   type="datetime-local"

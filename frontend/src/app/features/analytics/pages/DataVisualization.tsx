@@ -44,8 +44,8 @@ export default function DataVisualization() {
         avgRisk: statsData.avg_risk_score_24h*100,
         avgConfidence: statsData.avg_conf_score_24h*100
       });
-      setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).slice().reverse());
-      setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).slice().reverse());
+      setRiskOverTime(riskData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).reverse());
+      setConfidenceOverTime(confidenceData.map((d: { x: string, y: number }) => ({ ...d, y: d.y * 100 })).reverse());
       setConfidenceOverRisk(confidenceRiskData.map((d: { x: any, y: any }) => ({ x: d.x * 100, y: d.y * 100 })));
       setAllTransactions(txnData);
     };

@@ -23,6 +23,7 @@ def get_transactions(  session: SessionDep , page : int = Query(default=1, ge=1)
         .options(selectinload(Transaction.customer))
         .options(selectinload(Transaction.device))
         .options(selectinload(Transaction.review))
+        .order_by(Transaction.time.desc())
         .offset(skip).limit(limit)).all()
     
     result = [
